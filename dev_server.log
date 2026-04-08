@@ -1,0 +1,144 @@
+
+> servicedesk-app@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.2 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://10.210.70.209:3000
+- Environments: .env
+✓ Ready in 271ms
+
+ GET /requests 200 in 930ms (next.js: 741ms, application-code: 190ms)
+⨯ ./app/page.tsx
+'styled-jsx' cannot be imported from a Server Component module
+It only works in a Client Component but none of its parents are marked with 'use client', so they're Server Components by default.
+
+
+[browser] ./app/page.tsx
+'styled-jsx' cannot be imported from a Server Component module
+It only works in a Client Component but none of its parents are marked with 'use client', so they're Server Components by default. 
+    at handleErrors (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13828:21)
+    at processMessage (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13891:21)
+    at WebSocket.handleMessage (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13335:52) (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13828:21)
+[browser] ./app/page.tsx
+'styled-jsx' cannot be imported from a Server Component module
+It only works in a Client Component but none of its parents are marked with 'use client', so they're Server Components by default. 
+    at handleErrors (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13828:21)
+    at processMessage (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13891:21)
+    at WebSocket.handleMessage (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13335:52) (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0fhqo1d._.js:13828:21)
+ GET / 500 in 600ms (next.js: 537ms, application-code: 63ms)
+[browser] Uncaught Error: ./app/page.tsx
+'styled-jsx' cannot be imported from a Server Component module
+It only works in a Client Component but none of its parents are marked with 'use client', so they're Server Components by default.
+
+
+[browser] ./app/page.tsx
+'styled-jsx' cannot be imported from a Server Component module
+It only works in a Client Component but none of its parents are marked with 'use client', so they're Server Components by default. 
+    at handleErrors (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2773:21)
+    at processMessage (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2834:28)
+    at <unknown> (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2679:13)
+    at WebSocket.handleMessage (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2324:17) (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2773:21)
+[browser] ./app/page.tsx
+'styled-jsx' cannot be imported from a Server Component module
+It only works in a Client Component but none of its parents are marked with 'use client', so they're Server Components by default. 
+    at handleErrors (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2773:21)
+    at processMessage (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2834:28)
+    at <unknown> (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2679:13)
+    at WebSocket.handleMessage (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2324:17) (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2773:21)
+ GET /requests 500 in 18ms (next.js: 11ms, application-code: 7ms)
+[browser] Uncaught Error: ./app/page.tsx
+'styled-jsx' cannot be imported from a Server Component module
+It only works in a Client Component but none of its parents are marked with 'use client', so they're Server Components by default.
+
+
+[browser] ./app/page.tsx
+'styled-jsx' cannot be imported from a Server Component module
+It only works in a Client Component but none of its parents are marked with 'use client', so they're Server Components by default. 
+    at handleErrors (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2773:21)
+    at processMessage (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2834:28)
+    at <unknown> (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2679:13)
+    at WebSocket.handleMessage (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2324:17) (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2773:21)
+[browser] ./app/page.tsx
+'styled-jsx' cannot be imported from a Server Component module
+It only works in a Client Component but none of its parents are marked with 'use client', so they're Server Components by default. 
+    at handleErrors (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2773:21)
+    at processMessage (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2834:28)
+    at <unknown> (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2679:13)
+    at WebSocket.handleMessage (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2324:17) (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2773:21)
+ GET /requests 500 in 20ms (next.js: 11ms, application-code: 10ms)
+[browser] Uncaught Error: ./app/page.tsx
+'styled-jsx' cannot be imported from a Server Component module
+It only works in a Client Component but none of its parents are marked with 'use client', so they're Server Components by default.
+
+
+[browser] ./app/page.tsx
+'styled-jsx' cannot be imported from a Server Component module
+It only works in a Client Component but none of its parents are marked with 'use client', so they're Server Components by default. 
+    at handleErrors (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2773:21)
+    at processMessage (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2834:28)
+    at <unknown> (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2679:13)
+    at WebSocket.handleMessage (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2324:17) (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2773:21)
+[browser] ./app/page.tsx
+'styled-jsx' cannot be imported from a Server Component module
+It only works in a Client Component but none of its parents are marked with 'use client', so they're Server Components by default. 
+    at handleErrors (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2773:21)
+    at processMessage (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2834:28)
+    at <unknown> (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2679:13)
+    at WebSocket.handleMessage (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2324:17) (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2773:21)
+[browser] ./app/page.tsx
+'styled-jsx' cannot be imported from a Server Component module
+It only works in a Client Component but none of its parents are marked with 'use client', so they're Server Components by default. 
+    at handleErrors (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2773:21)
+    at processMessage (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2834:28)
+    at <unknown> (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2679:13)
+    at WebSocket.handleMessage (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2324:17) (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2773:21)
+[browser] ./app/page.tsx:137:1
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+  135 |       </div>
+  136 |   );
+> 137 | }
+      | ^
+  138 |
+
+Parsing ecmascript source code failed 
+    at handleErrors (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2773:21)
+    at processMessage (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2834:28)
+    at <unknown> (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2679:13)
+    at WebSocket.handleMessage (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2324:17) (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2773:21)
+[browser] ./app/page.tsx
+'styled-jsx' cannot be imported from a Server Component module
+It only works in a Client Component but none of its parents are marked with 'use client', so they're Server Components by default. 
+    at handleErrors (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2773:21)
+    at processMessage (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2834:28)
+    at <unknown> (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2679:13)
+    at WebSocket.handleMessage (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2324:17) (file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/.next/dev/static/chunks/node_modules_next_dist_client_0pe1dg-._.js:2773:21)
+✓ Compiled in 14ms
+ GET /requests 200 in 207ms (next.js: 5ms, application-code: 202ms)
+ HEAD /requests 200 in 47ms (next.js: 7ms, application-code: 40ms)
+ GET /requests 200 in 70ms (next.js: 18ms, application-code: 52ms)
+ GET / 200 in 110ms (next.js: 17ms, application-code: 93ms)
+ GET /requests 200 in 44ms (next.js: 2ms, application-code: 42ms)
+ GET / 200 in 39ms (next.js: 5ms, application-code: 34ms)
+ GET /requests 200 in 25ms (next.js: 1479µs, application-code: 23ms)
+ GET /requests 200 in 24ms (next.js: 13ms, application-code: 11ms)
+ GET /requests 200 in 32ms (next.js: 1863µs, application-code: 30ms)
+ GET / 200 in 46ms (next.js: 7ms, application-code: 39ms)
+ GET /requests 200 in 46ms (next.js: 3ms, application-code: 43ms)
+ GET / 200 in 34ms (next.js: 4ms, application-code: 30ms)
+ GET /requests 200 in 38ms (next.js: 4ms, application-code: 34ms)
+ GET /problems 404 in 203ms (next.js: 196ms, application-code: 7ms)
+ GET /problems 404 in 18ms (next.js: 915µs, application-code: 17ms)
+ GET /changes 404 in 8ms (next.js: 3ms, application-code: 5ms)
+ GET /changes 404 in 40ms (next.js: 2ms, application-code: 37ms)
+ GET /projects 404 in 11ms (next.js: 4ms, application-code: 7ms)
+ GET /projects 404 in 36ms (next.js: 3ms, application-code: 33ms)
+ GET /assets 200 in 146ms (next.js: 133ms, application-code: 13ms)
+ GET /solutions 404 in 20ms (next.js: 4ms, application-code: 17ms)
+ GET /solutions 404 in 31ms (next.js: 1988µs, application-code: 29ms)
+ GET /reports 404 in 12ms (next.js: 5ms, application-code: 7ms)
+ GET /reports 404 in 39ms (next.js: 3ms, application-code: 36ms)
+ GET /admin 404 in 12ms (next.js: 5ms, application-code: 7ms)
+ GET /admin 404 in 35ms (next.js: 3ms, application-code: 32ms)
+ GET / 200 in 30ms (next.js: 3ms, application-code: 28ms)
+ GET /requests 200 in 41ms (next.js: 6ms, application-code: 35ms)

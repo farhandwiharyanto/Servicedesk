@@ -1,0 +1,333 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  permissions String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       User[]
+}
+
+model Site {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  assets    Asset[]
+  requests  Request[]
+}
+
+model Group {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  requests  Request[]
+}
+
+model User {
+  id        String    @id @default(cuid())
+  name      String
+  email     String    @unique
+  roleId    String
+  avatar    String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  assets    Asset[]
+  changes   Change[]  @relation("ChangeOwner")
+  comments  Comment[]
+  problems  Problem[] @relation("TechnicianProblems")
+  requests  Request[] @relation("RequesterRequests")
+  assigned  Request[] @relation("TechnicianRequests")
+  role      Role      @relation(fields: [roleId], references: [id])
+  projects  Project[]
+  releases  Release[]
+  purchaseOrders PurchaseOrder[]
+  contracts Contract[]
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  changes  Change[]
+  problems Problem[]
+  requests Request[]
+}
+
+model Priority {
+  id       String       @id @default(cuid())
+  name     String       @unique
+  level    PriorityType @default(MEDIUM)
+  color    String?
+  changes  Change[]
+  problems Problem[]
+  requests Request[]
+  projects Project[]
+  releases Release[]
+}
+
+model Status {
+  id       String     @id @default(cuid())
+  name     String     @unique
+  type     StatusType @default(OPEN)
+  changes  Change[]
+  problems Problem[]
+  requests Request[]
+  projects Project[]
+  releases Release[]
+  maintenances MaintenanceSchedule[]
+  purchaseOrders PurchaseOrder[]
+  contracts Contract[]
+}
+
+model Impact {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  problems Problem[]
+  requests Request[]
+}
+
+model Urgency {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  problems Problem[]
+  requests Request[]
+}
+
+model Request {
+  id           String    @id @default(cuid())
+  subject      String
+  description  String
+  requesterId  String
+  technicianId String?
+  statusId     String
+  priorityId   String
+  impactId     String?
+  urgencyId    String?
+  categoryId   String
+  siteId       String?
+  groupId      String?
+  dueAt        DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  changeId     String?
+  problemId    String?
+  comments     Comment[]
+  category     Category  @relation(fields: [categoryId], references: [id])
+  change       Change?   @relation(fields: [changeId], references: [id])
+  group        Group?    @relation(fields: [groupId], references: [id])
+  impact       Impact?   @relation(fields: [impactId], references: [id])
+  priority     Priority  @relation(fields: [priorityId], references: [id])
+  problem      Problem?  @relation(fields: [problemId], references: [id])
+  requester    User      @relation("RequesterRequests", fields: [requesterId], references: [id])
+  site         Site?     @relation(fields: [siteId], references: [id])
+  status       Status    @relation(fields: [statusId], references: [id])
+  technician   User?     @relation("TechnicianRequests", fields: [technicianId], references: [id])
+  urgency      Urgency?  @relation(fields: [urgencyId], references: [id])
+}
+
+model Problem {
+  id                String    @id @default(cuid())
+  subject           String
+  description       String
+  rootCause         String?
+  symptoms          String?
+  impactAnalysis    String?
+  permanentSolution String?
+  workaround        String?
+  statusId          String
+  priorityId        String
+  impactId          String?
+  urgencyId         String?
+  categoryId        String
+  technicianId      String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  category          Category  @relation(fields: [categoryId], references: [id])
+  impact            Impact?   @relation(fields: [impactId], references: [id])
+  priority          Priority  @relation(fields: [priorityId], references: [id])
+  status            Status    @relation(fields: [statusId], references: [id])
+  technician        User?     @relation("TechnicianProblems", fields: [technicianId], references: [id])
+  urgency           Urgency?  @relation(fields: [urgencyId], references: [id])
+  requests          Request[]
+}
+
+model Change {
+  id           String    @id @default(cuid())
+  subject      String
+  description  String
+  stage        String    @default("Submission")
+  statusId     String
+  priorityId   String
+  categoryId   String
+  technicianId String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  category     Category  @relation(fields: [categoryId], references: [id])
+  priority     Priority  @relation(fields: [priorityId], references: [id])
+  status       Status    @relation(fields: [statusId], references: [id])
+  technician   User?     @relation("ChangeOwner", fields: [technicianId], references: [id])
+  requests     Request[]
+}
+
+model Solution {
+  id        String   @id @default(cuid())
+  subject   String
+  content   String
+  topic     String
+  status    String   @default("Approved")
+  isPublic  Boolean  @default(true)
+  views     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AssetType {
+  id     String  @id @default(cuid())
+  name   String  @unique
+  isIT   Boolean @default(true)
+  assets Asset[]
+}
+
+model AssetState {
+  id     String  @id @default(cuid())
+  name   String  @unique
+  assets Asset[]
+}
+
+model Asset {
+  id           String     @id @default(cuid())
+  name         String
+  serialNumber String?    @unique
+  ownerId      String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  siteId       String?
+  stateId      String
+  tag          String?    @unique
+  typeId       String
+  owner        User?      @relation(fields: [ownerId], references: [id])
+  site         Site?      @relation(fields: [siteId], references: [id])
+  state        AssetState @relation(fields: [stateId], references: [id])
+  type         AssetType  @relation(fields: [typeId], references: [id])
+  maintenances MaintenanceSchedule[]
+}
+
+model CIType {
+  id   String @id @default(cuid())
+  name String @unique
+  cis  CI[]
+}
+
+model CI {
+  id        String   @id @default(cuid())
+  name      String
+  typeId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  type      CIType   @relation(fields: [typeId], references: [id])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  message   String
+  userId    String
+  requestId String
+  createdAt DateTime @default(now())
+  request   Request  @relation(fields: [requestId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Project {
+  id           String    @id @default(cuid())
+  name         String
+  description  String?   @db.Text
+  statusId     String
+  status       Status    @relation(fields: [statusId], references: [id])
+  priorityId   String
+  priority     Priority  @relation(fields: [priorityId], references: [id])
+  ownerId      String
+  owner        User      @relation(fields: [ownerId], references: [id])
+  startDate    DateTime?
+  endDate      DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Release {
+  id           String    @id @default(cuid())
+  name         String
+  description  String?   @db.Text
+  statusId     String
+  status       Status    @relation(fields: [statusId], references: [id])
+  priorityId   String
+  priority     Priority  @relation(fields: [priorityId], references: [id])
+  ownerId      String
+  owner        User      @relation(fields: [ownerId], references: [id])
+  plannedDate  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model MaintenanceSchedule {
+  id           String    @id @default(cuid())
+  subject      String
+  description  String?   @db.Text
+  statusId     String
+  status       Status    @relation(fields: [statusId], references: [id])
+  assetId      String?
+  asset        Asset?    @relation(fields: [assetId], references: [id])
+  nextRun      DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model PurchaseOrder {
+  id           String    @id @default(cuid())
+  poNumber     String    @unique
+  subject      String
+  vendor       String
+  totalAmount  Float     @default(0)
+  statusId     String
+  status       Status    @relation(fields: [statusId], references: [id])
+  requesterId  String
+  requester    User      @relation(fields: [requesterId], references: [id])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Contract {
+  id           String    @id @default(cuid())
+  name         String
+  vendor       String
+  startDate    DateTime
+  endDate      DateTime
+  amount       Float     @default(0)
+  statusId     String
+  status       Status    @relation(fields: [statusId], references: [id])
+  ownerId      String
+  owner        User      @relation(fields: [ownerId], references: [id])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+enum PriorityType {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum StatusType {
+  OPEN
+  IN_PROGRESS
+  ON_HOLD
+  RESOLVED
+  CLOSED
+}
