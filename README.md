@@ -1,16 +1,24 @@
-# Zoho Manage ServiceDesk Plus - Enterprise Edition
+# Portal Management System - Enterprise ESM Clone
 
-A high-fidelity implementation of Zoho Manage ServiceDesk Plus, featuring a full ITIL module set, REST API for AI integration, and a professional enterprise UI.
+This project is a high-fidelity Enterprise Service Management (ESM) platform. It provides a unified, branded service portal for IT, HR, Facilities, and Housekeeping departments, featuring an intelligent AI assistant and a global Super Admin view.
 
-## 🚀 Key Modules Activated
-- ✅ **Inventory / AMDB**: Full tracking of IT and Non-IT assets.
-- ✅ **Problem Management**: Lifecycle management for IT problems and root cause analysis.
-- ✅ **Change Management**: Standardized workflows for submission, planning, and implementation.
-- ✅ **ITIL Suite**: Projects, Releases, Purchase, and Contracts.
-- ✅ **REST API (v1)**: Built-in endpoints for RAG/LLM/Python integration.
+## 🔑 Access Credentials
+**Password for all accounts:** `password`
+- **IT Portal**: `it_portal`
+- **HR Portal**: `hr_portal`
+- **Facilities Portal**: `fm_portal`
+- **Housekeeping**: `hp_portal`
+- **Super Admin**: `super_admin` (Available at `/super_admin`)
 
-## 🛠 Tech Stack
-- **Framework**: Next.js 16.2 (App Router)
+## 🚀 Key Modules
+- **Portal Assistant**: An automated AI concierge that welcomes users and guides them to the right department.
+- **Universal Sidebar**: Master-view for Super Admins with collapsible groups to manage all enterprise departments from one place.
+
+## 🛠️ Architecture
+- **Unified Portal**: A high-fidelity, minimalist landing page (`/`) serving as the global service directory.
+- **Instance Isolation**: Department-specific workflows and navigation (Instance-Aware Sidebar).
+- **Modern Stack**: Next.js 16.2 (App Router), Prisma, PostgreSQL, and Vanilla CSS.
+
 - **Database**: PostgreSQL with Prisma ORM
 - **Runtime**: Turbopack for lightning-fast dev cycles
 

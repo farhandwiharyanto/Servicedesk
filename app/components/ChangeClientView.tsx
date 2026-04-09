@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { ModuleToolbar } from './ModuleToolbar';
+import { FormattedDate } from './FormattedDate';
 
 interface ChangeClientViewProps {
   changes: any[];
@@ -53,24 +54,23 @@ export function ChangeClientView({
         onAction={handleAction}
       />
 
-      <div className="enterprise-table-wrapper-zoho">
-        <table className="zoho-table">
+      <div className="table-container">
+        <table className="modern-table">
           <thead>
             <tr>
-              <th style={{ width: '30px' }}>
+              <th style={{ width: '40px' }}>
                 <input 
                   type="checkbox" 
                   checked={initialChanges.length > 0 && selectedIds.length === initialChanges.length}
                   onChange={toggleAll}
                 />
               </th>
-              <th>Change ID</th>
+              <th style={{ width: '100px' }}>ID</th>
               <th>Subject</th>
               <th>Stage</th>
               <th>Status</th>
-              <th>Category</th>
               <th>Priority</th>
-              <th>Change Owner</th>
+              <th>Created</th>
             </tr>
           </thead>
           <tbody>
@@ -83,27 +83,30 @@ export function ChangeClientView({
                     onChange={() => toggleOne(change.id)}
                   />
                 </td>
-                <td>#{change.id.slice(-5).toUpperCase()}</td>
-                <td className="subject-cell">
-                  <Link href={`/changes/${change.id}`} className="zoho-link-bold">
+                <td style={{ color: 'var(--text-muted)', fontWeight: 600 }}>#{change.id.slice(-5).toUpperCase()}</td>
+                <td style={{ fontWeight: 500 }}>
+                  <Link href={`/changes/${change.id}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>
                     {change.subject}
                   </Link>
                 </td>
                 <td>
-                  <span className="change-stage-pill">{change.stage}</span>
+                  <span className="badge" style={{ backgroundColor: 'var(--bg-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-subtle)' }}>
+                    {change.stage}
+                  </span>
                 </td>
                 <td>
-                  <span className={`z-status stat-${change.status.type.toLowerCase()}`}>
+                  <span className={`badge badge-${change.status.type.toLowerCase() === 'open' ? 'primary' : change.status.type.toLowerCase() === 'in_progress' ? 'warning' : 'success'}`}>
                     {change.status.name}
                   </span>
                 </td>
-                <td>{change.category.name}</td>
                 <td>
-                  <span className={`z-prio prio-${change.priority.level.toLowerCase()}`}>
+                  <span style={{ fontWeight: 600, color: change.priority.level === 'HIGH' || change.priority.level === 'URGENT' ? 'var(--danger)' : 'inherit' }}>
                     {change.priority.name}
                   </span>
                 </td>
-                <td>{change.technician?.name || 'Unassigned'}</td>
+                <td style={{ color: 'var(--text-muted)' }}>
+                  <FormattedDate date={change.createdAt} />
+                </td>
               </tr>
             ))}
           </tbody>

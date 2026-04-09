@@ -1,28 +1,26 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { Header } from './components/Header';
+import { AppWrapper } from './components/AppWrapper';
+import { getSession } from '@/lib/auth';
 
 export const metadata: Metadata = {
   title: 'ServiceDesk | Enterprise IT Management',
   description: 'Professional IT Service Management Platform',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const user = await getSession();
+
   return (
     <html lang="en">
       <body>
-        <div className="app-wrapper">
-          <Header />
-          <div className="main-viewport">
-            <main id="main-view">
-              {children}
-            </main>
-          </div>
-        </div>
+        <AppWrapper user={user}>
+          {children}
+        </AppWrapper>
       </body>
     </html>
   );

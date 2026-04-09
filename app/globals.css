@@ -1,37 +1,51 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Outfit:wght@100..900&display=swap');
 
 :root {
-  /* High-Fidelity Zoho/ManageEngine Tokens */
-  --nav-dark: #004144;      /* Deep Teal used in ServiceDesk Plus */
-  --nav-active: rgba(255, 255, 255, 0.15);
-  --app-bg: #f4f7f9;
-  --sub-nav-bg: #ffffff;
-  --border-light: #d8dee4;
-  --table-header: #f1f5f8;
+  /* Modern Premium Palette (HSL for better flexibility) */
+  --primary-h: 210;
+  --primary-s: 100%;
+  --primary-l: 50%;
+  --primary: hsl(var(--primary-h), var(--primary-s), var(--primary-l));
+  --primary-hover: hsl(var(--primary-h), var(--primary-s), 40%);
+  --primary-glow: hsla(var(--primary-h), var(--primary-s), var(--primary-l), 0.15);
   
-  --primary: #0073e6;       /* Standard ManageEngine Blue */
-  --primary-glow: rgba(0, 115, 230, 0.1);
-  --secondary: #607d8b;
+  --accent-h: 180;
+  --accent-s: 100%;
+  --accent-l: 25%;
+  --accent: hsl(var(--accent-h), var(--accent-s), var(--accent-l)); /* Professional Teal */
   
-  --text-primary: #333333;
-  --text-secondary: #555555;
-  --text-muted: #888888;
-  --text-light: #ffffff;
+  --bg-main: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-sidebar: #0f172a; /* Slate 900 - Premium Dark Sidebar */
   
-  --success: #27ae60;
-  --warning: #f1c40f;
-  --danger: #e74c3c;
+  --text-main: #1e293b;   /* Slate 800 */
+  --text-muted: #64748b;  /* Slate 500 */
+  --text-on-dark: #f8fafc;
   
-  --header-height: 48px;    /* Zoho uses precise, compact headers */
-  --sub-header-height: 52px;
+  --border-subtle: #e2e8f0;
+  --border-focus: var(--primary);
   
-  --radius-sm: 2px;         /* Enterprise usually uses sharper corners */
-  --radius-md: 4px;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
   
-  --font-main: 'Open Sans', 'Segoe UI', Roboto, sans-serif;
-  --font-display: 'Open Sans', 'Segoe UI', Roboto, sans-serif;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
   
-  --transition: all 0.15s ease;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  
+  --sidebar-width: 260px;
+  --sidebar-collapsed: 80px;
+  --header-height: 64px;
+  
+  --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Outfit', sans-serif;
+  
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
@@ -41,358 +55,218 @@
 }
 
 body {
-  background-color: var(--app-bg);
-  color: var(--text-primary);
+  background-color: var(--bg-main);
+  color: var(--text-main);
   font-family: var(--font-main);
   -webkit-font-smoothing: antialiased;
-  min-height: 100vh;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+  overflow-x: hidden;
 }
 
-/* Layout Containers for Top-Nav only */
+/* --- Layout System --- */
 .app-wrapper {
   display: flex;
-  flex-direction: column;
   min-height: 100vh;
 }
 
-.main-viewport {
+.main-content {
   flex: 1;
-  padding: 0;
-  margin-top: calc(var(--header-height) + var(--sub-header-height));
-}
-
-/* Zoho ServiceDesk Plus High-Fidelity Styles */
-.header-nav.zoho-theme {
-  background: var(--nav-dark);
-  border-bottom: 2px solid rgba(0,0,0,0.1);
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 16px;
-  height: var(--header-height);
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
+  flex-direction: column;
+  min-width: 0; /* Prevent flex overflow */
 }
 
-.logo-area {
+.content-viewport {
+  padding: 24px;
+  flex: 1;
+}
+
+/* --- Sidebar Styles --- */
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--bg-sidebar);
+  color: var(--text-on-dark);
+  display: flex;
+  flex-direction: column;
+  transition: var(--transition);
+  border-right: 1px solid rgba(255,255,255,0.1);
+  z-index: 1000;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+}
+
+.sidebar-header {
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.logo-text {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 20px;
+  background: linear-gradient(to right, #fff, rgba(255,255,255,0.7));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.5px;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+}
+
+.nav-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-width: 180px;
-}
-
-.top-menu {
-  display: flex;
-  height: 100%;
-  flex: 1;
-  overflow-x: auto;
-  scrollbar-width: none; /* Hide scrollbar for Chrome/Safari/Firefox */
-}
-
-.top-menu::-webkit-scrollbar {
-  display: none;
-}
-
-.top-menu-item {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 2px;
-  padding: 0 10px;
-  font-size: 10px;
-  height: 100%;
-  color: rgba(255,255,255,0.65);
-  border-right: 1px solid rgba(255,255,255,0.05);
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  color: rgba(255,255,255,0.7);
   text-decoration: none;
-  min-width: 70px;
-  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 500;
   transition: var(--transition);
 }
 
-.top-menu-item span {
-  font-weight: 400;
+.nav-item:hover {
+  background: rgba(255,255,255,0.05);
+  color: #fff;
 }
 
-.top-menu-item:hover, .top-menu-item.active {
-  background: var(--nav-active);
-  color: white;
+.nav-item.active {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 4px 12px var(--primary-glow);
 }
 
-.top-menu-item.active {
-  box-shadow: inset 0 -3px 0 white;
+.sidebar-footer {
+  padding: 12px;
+  border-top: 1px solid rgba(255,255,255,0.05);
 }
 
-/* SubNav Integration Bar */
-.zoho-sub-nav {
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  background: rgba(255,255,255,0.03);
+  border-radius: var(--radius-md);
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+/* --- Header / Toolbar --- */
+.global-header {
+  height: var(--header-height);
   background: #fff;
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
-  padding: 0 16px;
-  gap: 24px;
-}
-
-.site-group-filters {
-  display: flex;
-  gap: 16px;
-  font-size: 12px;
-  border-right: 1px solid var(--border-light);
-  padding-right: 16px;
-}
-
-.filter-item {
-  display: flex;
-  gap: 6px;
-  cursor: pointer;
-}
-
-.filter-label { color: #888; }
-.filter-value { font-weight: 600; color: #333; }
-
-.view-selector-enterprise {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 700;
-  color: #333;
-  cursor: pointer;
-}
-
-.view-name { font-size: 14px; }
-
-/* Dashboard Redesign */
-.zoho-theme-bg { background: var(--app-bg); min-height: 100vh; }
-
-.dash-top-tabs {
-  background: white;
-  display: flex;
-  padding: 0 16px;
-  border-bottom: 1px solid var(--border-light);
+  justify-content: space-between;
+  padding: 0 24px;
   position: sticky;
-  top: calc(var(--header-height) + var(--sub-header-height));
+  top: 0;
   z-index: 900;
 }
 
-.tab {
-  padding: 10px 20px;
-  font-size: 13px;
+.page-title h1 {
+  font-family: var(--font-display);
+  font-size: 18px;
   font-weight: 600;
-  color: #666;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
+  color: var(--text-main);
 }
 
-.tab.active {
-  color: var(--primary);
-  border-bottom-color: var(--primary);
-}
-
-.dash-content-area { padding: 16px; }
-
-.metrics-grid-zoho {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.zoho-metric-card {
-  background: white;
-  padding: 12px 16px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-light);
-  border-top-width: 4px;
+.header-actions {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+/* --- Premium Buttons --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  border: 1px solid transparent;
   gap: 8px;
 }
 
-.border-open { border-top-color: var(--primary); }
-.border-progress { border-top-color: var(--warning); }
-.border-overdue { border-top-color: var(--danger); }
-.border-total { border-top-color: var(--secondary); }
-
-.m-title { font-size: 12px; font-weight: 600; color: #666; }
-.metric-header { display: flex; justify-content: space-between; align-items: center; }
-.m-value { font-size: 24px; font-weight: 700; color: #333; }
-.m-sub { font-size: 11px; color: #999; margin-left: 4px; }
-
-/* Split Layout for Requests */
-.requests-content-split {
-  display: flex;
-  height: calc(100vh - var(--header-height) - var(--sub-header-height));
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
 }
 
-.requests-sidebar {
-  width: 220px;
-  background: #f8fafb;
-  border-right: 1px solid var(--border-light);
-  padding: 16px;
+.btn-primary:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
-.section-title {
-  font-size: 11px;
-  text-transform: uppercase;
-  color: #888;
-  margin-bottom: 12px;
-  letter-spacing: 0.5px;
+.btn-secondary {
+  background: #fff;
+  border-color: var(--border-subtle);
+  color: var(--text-main);
 }
 
-.filter-list { display: flex; flex-direction: column; gap: 2px; }
-
-.filter-link {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px;
-  font-size: 13px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  color: #444;
+.btn-secondary:hover {
+  background: var(--bg-main);
 }
 
-.filter-link:hover { background: #eff3f6; }
-.filter-link.active { background: #e6eff7; color: var(--primary); font-weight: 600; }
-.f-count { color: #888; font-size: 11px; }
-
-.enterprise-table-container {
-  flex: 1;
-  background: white;
-  display: flex;
-  flex-direction: column;
+/* --- Card Styles --- */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+  transition: var(--transition);
 }
 
-.table-actions-top {
-  padding: 8px 16px;
-  border-bottom: 1px solid var(--border-light);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.card:hover {
+  box-shadow: var(--shadow-md);
 }
 
-.btn-ghost {
-  background: none;
-  border: 1px solid transparent;
-  padding: 4px 8px;
-  font-size: 12px;
-  cursor: pointer;
-  color: #555;
+/* --- Table Design --- */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  background: #fff;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
 }
 
-.btn-ghost:hover { background: #f0f0f0; border-radius: 2px; }
-
-.zoho-table {
+.modern-table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.zoho-table th {
-  background: var(--table-header);
-  border-bottom: 1px solid var(--border-light);
-  padding: 8px 12px;
+.modern-table th {
   text-align: left;
-  font-size: 11px;
-  font-weight: 600;
-  color: #666;
-  text-transform: uppercase;
-}
-
-.zoho-table td {
-  padding: 8px 12px;
-  border-bottom: 1px solid #f1f1f1;
-  font-size: 13px;
-  color: #333;
-}
-
-.zoho-link-bold {
-  color: var(--primary);
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.zoho-link-bold:hover { text-decoration: underline; }
-
-.z-status {
-  padding: 2px 6px;
-  border-radius: 10px;
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.stat-open { background: #e8f4fd; color: #0073e6; }
-.stat-in_progress { background: #fff8e1; color: #f39c12; }
-.stat-resolved { background: #e8f5e9; color: #27ae60; }
-
-.z-prio { font-weight: 600; font-size: 12px; }
-.prio-high { color: var(--danger); }
-.prio-urgent { color: #b71c1c; text-decoration: underline; }
-
-.text-overdue { color: var(--danger); font-weight: 700; }
-
-/* Dashboard Two Col Layout */
-.dash-main-two-col {
-  display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 16px;
-}
-
-.panel {
-  background: white;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-  display: flex;
-  flex-direction: column;
-}
-
-.panel-header {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border-light);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.panel-header h3 { font-size: 14px; color: #333; font-weight: 700; }
-
-.zoho-list-item {
-  padding: 12px 16px;
-  border-bottom: 1px solid #f9f9f9;
-  cursor: pointer;
-}
-
-.zoho-list-item:hover { background: #fbfbfc; }
-
-.request-id { font-family: monospace; color: #888; font-size: 11px; margin-right: 8px; }
-.request-subject { font-weight: 600; font-size: 13px; color: #333; }
-
-.item-meta { display: flex; gap: 8px; font-size: 11px; color: #777; margin-top: 4px; align-items: center; }
-
-.zoho-action-list { padding: 8px; display: flex; flex-direction: column; gap: 4px; }
-
-.z-action {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  font-size: 13px;
-  color: #444;
-  text-decoration: none;
-  border-radius: var(--radius-sm);
-}
-
-.z-action:hover { background: #f0f4f7; }
-
-.z-divider { height: 1px; background: var(--border-light); margin: 8px 0; }
-
-.empty-state { padding: 40px; text-align: center; color: #aaa; font-style: italic; font-size: 13px; }
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   padding-left: 16px;
 }
 
@@ -705,3 +579,142 @@ body {
 /* Selection Styles */
 .selected-row { background-color: #f0f7ff !important; }
 .empty-table-msg { padding: 40px; text-align: center; color: #aaa; font-style: italic; }
+
+/* --- ESM Portal Styles --- */
+.portal-container {
+  font-family: var(--font-main);
+  background-color: #f8fafc;
+}
+
+.portal-container .card {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease-in-out;
+}
+
+.portal-container .card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border-color: var(--primary);
+}
+
+/* --- Modern SubHeader Styles --- */
+.sub-header-modern {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: #fff;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 32px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  gap: 20px;
+}
+
+.sub-header-modern .filter-group {
+  display: flex;
+  gap: 12px;
+}
+
+.sub-header-modern .filter-pill, .sub-header-modern .view-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: var(--bg-main);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.sub-header-modern .filter-pill:hover, .sub-header-modern .view-pill:hover {
+  background: #fff;
+  border-color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.sub-header-modern .filter-pill .label {
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.sub-header-modern .filter-pill .value, .sub-header-modern .view-pill .name {
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.sub-header-modern .actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.sub-header-modern .divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border-subtle);
+  margin: 0 4px;
+}
+
+.sub-header-modern .action-icon-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: #fff;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.sub-header-modern .action-icon-btn:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--primary-glow);
+}
+
+.sub-header-modern .pagination-compact {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.sub-header-modern .pagination-compact .count {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.sub-header-modern .pagination-compact .arrows {
+  display: flex;
+  gap: 4px;
+}
+
+.sub-header-modern .btn-small {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: #fff;
+  color: var(--text-main);
+  font-size: 12px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.sub-header-modern .btn-small:hover {
+  background: var(--bg-main);
+  border-color: var(--primary);
+}

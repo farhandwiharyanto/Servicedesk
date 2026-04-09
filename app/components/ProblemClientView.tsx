@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ModuleToolbar } from './ModuleToolbar';
 import { CreateProblemModal } from './CreateProblemModal';
 import { deleteEntity } from '@/app/lib/actions';
+import { FormattedDate } from './FormattedDate';
 
 interface ProblemClientViewProps {
   problems: any[];
@@ -64,24 +65,23 @@ export function ProblemClientView({
         onAction={handleAction}
       />
 
-      <div className="enterprise-table-wrapper-zoho">
-        <table className="zoho-table">
+      <div className="table-container">
+        <table className="modern-table">
           <thead>
             <tr>
-              <th style={{ width: '30px' }}>
+              <th style={{ width: '40px' }}>
                 <input 
                   type="checkbox" 
                   checked={initialProblems.length > 0 && selectedIds.length === initialProblems.length}
                   onChange={toggleAll}
                 />
               </th>
-              <th style={{ width: '80px' }}>ID</th>
-              <th style={{ width: '400px' }}>Subject</th>
+              <th style={{ width: '100px' }}>ID</th>
+              <th>Subject</th>
               <th>Status</th>
-              <th>Technician</th>
               <th>Category</th>
               <th>Priority</th>
-              <th>Created Date</th>
+              <th>Created</th>
             </tr>
           </thead>
           <tbody>
@@ -94,25 +94,26 @@ export function ProblemClientView({
                     onChange={() => toggleOne(prob.id)}
                   />
                 </td>
-                <td className="text-secondary">#{prob.id.slice(-5).toUpperCase()}</td>
-                <td className="subject-cell">
-                  <Link href={`/problems/${prob.id}`} className="zoho-link-bold">
+                <td style={{ color: 'var(--text-muted)', fontWeight: 600 }}>#{prob.id.slice(-5).toUpperCase()}</td>
+                <td style={{ fontWeight: 500 }}>
+                  <Link href={`/problems/${prob.id}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>
                     {prob.subject}
                   </Link>
                 </td>
                 <td>
-                  <span className={`z-status stat-${prob.status.type.toLowerCase()}`}>
+                  <span className={`badge badge-${prob.status.type.toLowerCase() === 'open' ? 'primary' : prob.status.type.toLowerCase() === 'in_progress' ? 'warning' : 'success'}`}>
                     {prob.status.name}
                   </span>
                 </td>
-                <td>{prob.technician?.name || 'Unassigned'}</td>
                 <td>{prob.category.name}</td>
                 <td>
-                  <span className={`z-prio prio-${prob.priority.level.toLowerCase()}`}>
+                  <span style={{ fontWeight: 600, color: prob.priority.level === 'HIGH' || prob.priority.level === 'URGENT' ? 'var(--danger)' : 'inherit' }}>
                     {prob.priority.name}
                   </span>
                 </td>
-                <td>{new Date(prob.createdAt).toLocaleDateString()}</td>
+                <td style={{ color: 'var(--text-muted)' }}>
+                  <FormattedDate date={prob.createdAt} />
+                </td>
               </tr>
             ))}
           </tbody>

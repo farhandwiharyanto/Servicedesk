@@ -1,6 +1,6 @@
-# Zoho Manage ServiceDesk Plus Clone - High Fidelity
+# Portal Management System - Enterprise ESM Edition
 
-This project has been transformed into a professional, high-fidelity clone of **ManageEngine ServiceDesk Plus (Enterprise Edition)**.
+Proyek ini telah ditransformasi menjadi platform **Enterprise Service Management (ESM)** yang terintegrasi, berfungsi sebagai pusat layanan tunggal untuk seluruh departemen perusahaan.
 
 ## Key Features
 
@@ -9,10 +9,31 @@ This project has been transformed into a professional, high-fidelity clone of **
   - White sub-header "Context Bar" with Site and Group filters.
   - Compact, information-dense Dashboard with status tabs and metric cards.
   - Split-view Request management with sidebar filters and a professional table grid.
-- **Full ITIL Module Activation**:
-  - Live data integration for **Requests, Problems, Changes, Assets, Solutions**.
-  - Expanded ITIL processes: **Projects, Releases, Maintenance, Purchase, Contracts**.
-  - CMDB (Configuration Management Database) with CI tracking.
+- **Enterprise Service Management (ESM) Portal**:
+  - Halaman Landing Utama (`/`) yang berfungsi sebagai direktori layanan global.
+  - Sektor layanan mandiri untuk IT, HR, Facilities, dan Housekeeping.
+  - Alur autentikasi modern: Portal bersifat publik, login diminta saat mengakses modul spesifik.
+- **Super Admin Portal (`/super_admin`)**:
+  - Pintu masuk administratif khusus dengan branding **Luxury Muted Gold**.
+  - Dashboard Global yang merangkum data dari seluruh portal dalam satu layar.
+- **Portal Assistant (AI Concierge)**:
+  - Chatbot cerdas yang menyambut pengguna di halaman utama secara otomatis.
+- **Multi-Portal Authentication**:
+  - Halaman login dinamis yang menyesuaikan branding dengan departemen yang dituju.
+  - **Daftar Kredensial Akses (Password: `password`)**:
+    - IT Portal: `it_portal`
+    - HR Portal: `hr_portal`
+    - Facilities Portal: `fm_portal`
+    - Housekeeping: `hp_portal`
+    - Super Admin: `super_admin`
+- **Multi-Instance Architecture**:
+  - **IT Portal**: Manajemen Requests, Problems, dan Changes.
+  - **HR Portal**: Manajemen Cases, Directory Karyawan, dan Onboarding.
+  - **Facilities Portal**: Manajemen Work Orders, Infrastructure, dan Space.
+  - **Housekeeping Portal**: Manajemen Service Tasks dan Jadwal Harian.
+- **Adaptive & Collapsible Sidebar**:
+  - Sidebar adaptif yang berubah menu berdasarkan departemen.
+  - Fitur **Collapsible Groups** untuk Super Admin agar navigasi antar portal lebih ringkas.
 - **REST API (v1)**:
   - Secure endpoints for RAG (Knowledge Base), LLM (Ticket Creation), and Python integration.
   - Header-based API Key authentication.

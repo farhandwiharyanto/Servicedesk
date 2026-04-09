@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ModuleToolbar } from './ModuleToolbar';
 import { CreateTicketModal } from './CreateTicketModal';
 import { deleteEntity } from '@/app/lib/actions';
+import { FormattedDate } from './FormattedDate';
 
 interface RequestClientViewProps {
   requests: any[];
@@ -66,24 +67,23 @@ export function RequestClientView({
         onAction={handleAction}
       />
 
-      <div className="enterprise-table-wrapper-zoho">
-        <table className="zoho-table">
+      <div className="table-container">
+        <table className="modern-table">
           <thead>
             <tr>
-              <th style={{ width: '30px' }}>
+              <th style={{ width: '40px' }}>
                 <input 
                   type="checkbox" 
                   checked={initialRequests.length > 0 && selectedIds.length === initialRequests.length}
                   onChange={toggleAll}
                 />
               </th>
-              <th style={{ width: '80px' }}>ID</th>
-              <th style={{ width: '400px' }}>Subject</th>
+              <th style={{ width: '100px' }}>ID</th>
+              <th>Subject</th>
               <th>Requester</th>
-              <th>Technician</th>
               <th>Status</th>
               <th>Priority</th>
-              <th>Created Date</th>
+              <th>Created</th>
             </tr>
           </thead>
           <tbody>
@@ -96,25 +96,26 @@ export function RequestClientView({
                     onChange={() => toggleOne(req.id)}
                   />
                 </td>
-                <td className="text-secondary">#{req.id.slice(-5).toUpperCase()}</td>
-                <td className="subject-cell">
-                  <Link href={`/requests/${req.id}`} className="zoho-link-bold">
+                <td style={{ color: 'var(--text-muted)', fontWeight: 600 }}>#{req.id.slice(-5).toUpperCase()}</td>
+                <td style={{ fontWeight: 500 }}>
+                  <Link href={`/requests/${req.id}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>
                     {req.subject}
                   </Link>
                 </td>
                 <td>{req.requester.name}</td>
-                <td>{req.technician?.name || 'Unassigned'}</td>
                 <td>
-                  <span className={`z-status stat-${req.status.type.toLowerCase()}`}>
+                  <span className={`badge badge-${req.status.type.toLowerCase() === 'open' ? 'primary' : req.status.type.toLowerCase() === 'in_progress' ? 'warning' : 'success'}`}>
                     {req.status.name}
                   </span>
                 </td>
                 <td>
-                  <span className={`z-prio prio-${req.priority.level.toLowerCase()}`}>
+                  <span style={{ fontWeight: 600, color: req.priority.level === 'HIGH' || req.priority.level === 'URGENT' ? 'var(--danger)' : 'inherit' }}>
                     {req.priority.name}
                   </span>
                 </td>
-                <td>{new Date(req.createdAt).toLocaleDateString()}</td>
+                <td style={{ color: 'var(--text-muted)' }}>
+                  <FormattedDate date={req.createdAt} />
+                </td>
               </tr>
             ))}
           </tbody>

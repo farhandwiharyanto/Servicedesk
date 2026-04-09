@@ -38,25 +38,27 @@ export async function SubHeader() {
   }
 
   return (
-    <div className="sub-nav zoho-sub-nav">
-      <div className="site-group-filters">
-        <div className="filter-item">
-          <span className="filter-label">Site:</span>
-          <span className="filter-value">All Sites <i className="chevron" /></span>
+    <div className="sub-header-modern">
+      <div className="filter-group">
+        <div className="filter-pill">
+          <span className="label">Site:</span>
+          <span className="value">All Sites</span>
+          <NavIcon name="chevronRight" size={12} color="var(--text-muted)" />
         </div>
-        <div className="filter-item">
-          <span className="filter-label">Group:</span>
-          <span className="filter-value">All Groups <i className="chevron" /></span>
+        <div className="filter-pill">
+          <span className="label">Group:</span>
+          <span className="value">All Groups</span>
+          <NavIcon name="chevronRight" size={12} color="var(--text-muted)" />
         </div>
       </div>
 
-      <div className="view-selector-enterprise">
-        <NavIcon name="requests" size={16} color="#0073e6" />
-        <span className="view-name">Open Requests</span>
-        <span className="dropdown-icon-small"></span>
+      <div className="view-pill">
+        <NavIcon name="requests" size={16} color="var(--primary)" />
+        <span className="name">Open Requests</span>
+        <NavIcon name="chevronRight" size={12} color="var(--text-muted)" />
       </div>
 
-      <div className="sub-header-actions">
+      <div className="actions">
         <NewTicketButton 
           categories={categories}
           priorities={priorities}
@@ -65,21 +67,21 @@ export async function SubHeader() {
           urgencies={urgencies}
         />
         
-        <div className="action-divider" />
+        <div className="divider" />
 
-        <button className="icon-btn-outline" title="Advanced Search">
-          <NavIcon name="search" size={16} color="#555" />
+        <button className="action-icon-btn" title="Filter View">
+          <NavIcon name="search" size={16} />
         </button>
-        <button className="icon-btn-outline" title="Kanban View">
-          <NavIcon name="dashboard" size={16} color="#555" />
+        <button className="action-icon-btn" title="Kanban">
+           <NavIcon name="dashboard" size={16} />
         </button>
       </div>
 
-      <div className="pagination-info-compact">
-        <span>1 - {categories.length > 0 ? '25' : '0'}</span>
-        <div className="pagination-arrows">
-          <button className="arrow-btn">{'<'}</button>
-          <button className="arrow-btn">{'>'}</button>
+      <div className="pagination-compact">
+        <span className="count">1 - {categories.length > 0 ? '25' : '0'}</span>
+        <div className="arrows">
+          <button className="btn-small">{'<'}</button>
+          <button className="btn-small">{'>'}</button>
         </div>
       </div>
     </div>

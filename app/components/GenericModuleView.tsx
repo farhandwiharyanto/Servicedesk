@@ -1,95 +1,121 @@
 'use client';
 
-import React, { useState } from 'react';
-import { ModuleToolbar } from './ModuleToolbar';
+import React from 'react';
+import { NavIcon } from './NavIcon';
+import { FormattedDate } from './FormattedDate';
 
-interface GenericModuleViewProps {
-  moduleName: string;
-  headers: string[];
-  data: any[]; 
+interface Column {
+  key: string;
+  label: string;
+  render?: (value: any, item: any) => React.ReactNode;
 }
 
-export function GenericModuleView({ moduleName, headers, data }: GenericModuleViewProps) {
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+interface GenericModuleViewProps {
+  title: string;
+  icon: any;
+  accentColor: string;
+  columns: Column[];
+  data: any[];
+  onAddClick?: () => void;
+  primaryActionLabel?: string;
+}
 
-  const toggleAll = () => {
-    if (selectedIds.length === data.length && data.length > 0) {
-      setSelectedIds([]);
-    } else {
-      setSelectedIds(data.map(item => item.id || item.name || String(Math.random())));
-    }
-  };
-
-  const toggleOne = (id: string) => {
-    setSelectedIds(prev => 
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-    );
-  };
-
-  const handleAction = (actionId: string) => {
-    if (actionId === 'delete') {
-      if (confirm(`Are you sure you want to delete ${selectedIds.length} items from ${moduleName}?`)) {
-        alert(`Bulk delete for ${selectedIds.length} items in ${moduleName} triggered. Server implementation pending.`);
-        setSelectedIds([]);
-      }
-    } else {
-      alert(`Action "${actionId}" triggered for ${selectedIds.length} items.`);
-    }
-  };
-
+export function GenericModuleView({
+  title,
+  icon,
+  accentColor,
+  columns,
+  data,
+  onAddClick,
+  primaryActionLabel = 'Add New'
+}: GenericModuleViewProps) {
   return (
-    <>
-      <ModuleToolbar 
-        moduleName={moduleName} 
-        onNew={() => alert(`New ${moduleName} form coming soon.`)}
-        selectedCount={selectedIds.length}
-        onAction={handleAction}
-      />
+    <div className="module-view-container">
+      {/* Module Header */}
+      <div className="sub-header-modern" style={{ marginBottom: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ 
+            width: '32px', 
+            height: '32px', 
+            borderRadius: '8px', 
+            background: `${accentColor}15`, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center' 
+          }}>
+            <NavIcon name={icon} color={accentColor} size={18} />
+          </div>
+          <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-main)' }}>{title}</h2>
+        </div>
 
-      <div className="enterprise-table-wrapper-zoho">
-        <table className="zoho-table">
-          <thead>
-            <tr>
-              <th style={{ width: '30px' }}>
-                <input 
-                  type="checkbox" 
-                  checked={data.length > 0 && selectedIds.length === data.length}
-                  onChange={toggleAll}
-                />
-              </th>
-              {headers.map(h => <th key={h}>{h}</th>)}
-            </tr>
-          </thead>
-          <tbody>
-            {data.length > 0 ? data.map((item, idx) => {
-              const itemId = item.id || `row-${idx}`;
-              // Display logic: show all non-id fields
-              const rowData = Object.entries(item).filter(([k]) => k !== 'id');
+        <div className="actions">
+          {onAddClick && (
+            <button 
+              className="btn btn-primary" 
+              onClick={onAddClick}
+              style={{ background: accentColor, borderColor: accentColor }}
+            >
+              <NavIcon name="plus" size={14} color="#fff" />
+              {primaryActionLabel}
+            </button>
+          )}
+          
+          <div className="divider" />
 
-              return (
-                <tr key={itemId} className={selectedIds.includes(itemId) ? 'selected-row' : ''}>
-                  <td>
-                    <input 
-                      type="checkbox" 
-                      checked={selectedIds.includes(itemId)}
-                      onChange={() => toggleOne(itemId)}
-                    />
-                  </td>
-                  {rowData.map(([key, val]: [string, any], i) => (
-                    <td key={i}>{String(val)}</td>
-                  ))}
-                </tr>
-              );
-            }) : (
-              <tr>
-                <td colSpan={headers.length + 1} className="empty-table-msg">
-                   No {moduleName.toLowerCase()}s found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+          <button className="action-icon-btn" title="Filter">
+            <NavIcon name="search" size={16} />
+          </button>
+          <button className="action-icon-btn" title="More">
+            <NavIcon name="cmdb" size={16} />
+          </button>
+        </div>
       </div>
-    </>
+
+      {/* Table Content */}
+      <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
+        <div className="table-container" style={{ border: 'none', borderRadius: '0' }}>
+          <table className="modern-table">
+            <thead>
+              <tr>
+                {columns.map(col => (
+                  <th key={col.key}>{col.label}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {data.length > 0 ? (
+                data.map((item, idx) => (
+                  <tr key={item.id || idx}>
+                    {columns.map(col => (
+                      <td key={col.key}>
+                        {col.render ? col.render(item[col.key], item) : item[col.key]}
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={columns.length} style={{ textAlign: 'center', padding: '48px', color: 'var(--text-muted)' }}>
+                    <div style={{ opacity: 0.5, marginBottom: '12px' }}>
+                      <NavIcon name="search" size={32} />
+                    </div>
+                    No records found in this module.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Footer info */}
+        <div style={{ padding: '12px 20px', borderTop: '1px solid var(--border-subtle)', background: '#fcfcfc', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+           <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Showing {data.length} records</span>
+           <div style={{ display: 'flex', gap: '8px' }}>
+              <button style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--border-subtle)', background: '#fff', fontSize: '11px', cursor: 'pointer' }}>Previous</button>
+              <button style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--border-subtle)', background: '#fff', fontSize: '11px', cursor: 'pointer' }}>Next</button>
+           </div>
+        </div>
+      </div>
+    </div>
   );
 }
