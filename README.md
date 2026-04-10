@@ -1,47 +1,60 @@
-# Portal Management System - Enterprise ESM Clone
+## 🏗 Architecture & Flow
 
-This project is a high-fidelity Enterprise Service Management (ESM) platform. It provides a unified, branded service portal for IT, HR, Facilities, and Housekeeping departments, featuring an intelligent AI assistant and a global Super Admin view.
+The system uses a **Bilateral Decoupled Architecture**:
+1. **Frontend (Next.js)**: Performs Server-Side Rendering (SSR) and communicates with the backend via a secure internal API bridge.
+2. **Backend (Laravel)**: Acts as the stateless source of truth for data and AI logic.
+3. **Session**: Handled via Laravel Sanctum stateful cookies.
 
-## 🔑 Access Credentials
-**Password for all accounts:** `password`
-- **IT Portal**: `it_portal`
-- **HR Portal**: `hr_portal`
-- **Facilities Portal**: `fm_portal`
-- **Housekeeping**: `hp_portal`
-- **Super Admin**: `super_admin` (Available at `/super_admin`)
+## 🚀 Getting Started
 
-## 🚀 Key Modules
-- **Portal Assistant**: An automated AI concierge that welcomes users and guides them to the right department.
-- **Universal Sidebar**: Master-view for Super Admins with collapsible groups to manage all enterprise departments from one place.
+### 1. Prerequisites
+- Docker & Docker Desktop
+- PHP 8.3+ & Composer
+- Node.js 18+ & npm
 
-## 🛠️ Architecture
-- **Unified Portal**: A high-fidelity, minimalist landing page (`/`) serving as the global service directory.
-- **Instance Isolation**: Department-specific workflows and navigation (Instance-Aware Sidebar).
-- **Modern Stack**: Next.js 16.2 (App Router), Prisma, PostgreSQL, and Vanilla CSS.
-
-- **Database**: PostgreSQL with Prisma ORM
-- **Runtime**: Turbopack for lightning-fast dev cycles
-
-## 📖 Documentation
-Detailed documentation on setup, modules, and API integration can be found in **[DOKUMENTASI.md](file:///Users/farhandwiharyanto/Zoho%20Manage%20ServiceDesk/DOKUMENTASI.md)**.
-
-## 🏁 Quick Start
-1. Ensure Docker is running.
-2. Initialize and sync data:
-   ```bash
-   npx prisma db push
-   npx prisma db seed
-   ```
-3. Launch development server:
-   ```bash
-   npm run dev
-   ```
-4. Access at [http://localhost:3000](http://localhost:3000)
-
-## 🤖 AI & Python Integration
-To integrate with your RAG or LLM project, use the provided client:
-```python
-# scripts/service_desk_client.py
-client = ServiceDeskClient(API_BASE_URL, API_KEY)
-kb_data = client.get_kb_articles() # Perfect for RAG
+### 2. Services Initialization (Docker)
+In the project root, start the PostgreSQL instance:
+```bash
+docker-compose up -d
 ```
+
+### 3. Backend Setup
+```bash
+cd backend
+composer install
+cp .env.example .env # Ensure DB_PORT=5433
+php artisan key:generate
+php artisan migrate:fresh --seed
+php artisan serve
+```
+
+### 4. Frontend Setup
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+## 🔐 Credentials (Demo Data)
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| **Administrator** | `admin@servicedesk.com` | `password` |
+| **Technician** | `tech@servicedesk.com` | `password` |
+
+## 📂 Documentation Stack
+- **[DOKUMENTASI.md](file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/DOKUMENTASI.md)**: Main project documentation (Indonesian).
+- **[TECHNICAL_GUIDE.md](file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/TECHNICAL_GUIDE.md)**: Detailed migration and API guide.
+- **[docs/reference/](file:///Users/farhandwiharyanto/Zoho Manage ServiceDesk/docs/reference/)**: Technical reference files (e.g., legacy Prisma schema).
+
+## 📖 Key Modules
+- **Service Request**: Multi-portal support (IT, HR, Facilities).
+- **Asset Management (CMDB)**: Track assets and CI relationships.
+- **AI ChatBot**: RAG-powered concierge for knowledge base lookup.
+
+## 📂 Project Structure
+- `/frontend`: Next.js application.
+- `/backend`: Laravel application.
+- `/docs`: Detailed technical and design documentation.
+
+---
+*Created with 💙 for Enterprise Service Excellence.*
