@@ -6,5 +6,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class CIType extends Model
 {
-    //
+    protected $table = 'ci_types';
 }

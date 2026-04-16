@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ModuleToolbar } from './ModuleToolbar';
+import { LegacyChangeToolbar } from './LegacyChangeToolbar';
 import { FormattedDate } from './FormattedDate';
 
 interface ChangeClientViewProps {
@@ -34,84 +34,74 @@ export function ChangeClientView({
     );
   };
 
-  const handleAction = (actionId: string) => {
-    if (actionId === 'delete') {
-      if (confirm(`Are you sure you want to delete ${selectedIds.length} changes?`)) {
-        alert('Bulk delete triggered. Implementation pending.');
-        setSelectedIds([]);
-      }
-    } else {
-      alert(`Action ${actionId} triggered for ${selectedIds.length} changes.`);
-    }
-  };
-
   return (
-    <>
-      <ModuleToolbar 
-        moduleName="Change" 
+    <div style={{ flex: 1, overflow: 'hidden' }}>
+      <LegacyChangeToolbar 
         onNew={() => alert('New Change form coming soon.')}
         selectedCount={selectedIds.length}
-        onAction={handleAction}
       />
 
-      <div className="table-container">
-        <table className="modern-table">
+      <div className="table-legacy-wrap" style={{ margin: 0 }}>
+        <table className="table-legacy">
           <thead>
-            <tr>
-              <th style={{ width: '40px' }}>
+            <tr style={{ background: '#f2f5f7' }}>
+              <th style={{ width: '24px' }}>
                 <input 
                   type="checkbox" 
                   checked={initialChanges.length > 0 && selectedIds.length === initialChanges.length}
                   onChange={toggleAll}
                 />
               </th>
-              <th style={{ width: '100px' }}>ID</th>
-              <th>Subject</th>
+              <th>Title</th>
+              <th>ChangeOwner</th>
+              <th>Category</th>
+              <th>Priority</th>
+              <th>Change Type</th>
+              <th>Old Status</th>
               <th>Stage</th>
               <th>Status</th>
-              <th>Priority</th>
-              <th>Created</th>
             </tr>
           </thead>
           <tbody>
-            {initialChanges.map((change: any) => (
-              <tr key={change.id} className={selectedIds.includes(change.id) ? 'selected-row' : ''}>
-                <td>
-                  <input 
-                    type="checkbox" 
-                    checked={selectedIds.includes(change.id)}
-                    onChange={() => toggleOne(change.id)}
-                  />
-                </td>
-                <td style={{ color: 'var(--text-muted)', fontWeight: 600 }}>#{change.id.slice(-5).toUpperCase()}</td>
-                <td style={{ fontWeight: 500 }}>
-                  <Link href={`/changes/${change.id}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>
-                    {change.subject}
-                  </Link>
-                </td>
-                <td>
-                  <span className="badge" style={{ backgroundColor: 'var(--bg-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-subtle)' }}>
-                    {change.stage}
-                  </span>
-                </td>
-                <td>
-                  <span className={`badge badge-${change.status.type.toLowerCase() === 'open' ? 'primary' : change.status.type.toLowerCase() === 'in_progress' ? 'warning' : 'success'}`}>
-                    {change.status.name}
-                  </span>
-                </td>
-                <td>
-                  <span style={{ fontWeight: 600, color: change.priority.level === 'HIGH' || change.priority.level === 'URGENT' ? 'var(--danger)' : 'inherit' }}>
-                    {change.priority.name}
-                  </span>
-                </td>
-                <td style={{ color: 'var(--text-muted)' }}>
-                  <FormattedDate date={change.createdAt} />
-                </td>
+            {initialChanges.map((change: any) => {
+              const isNormal = change.subject.toLowerCase().includes('normal') || change.type === 'normal';
+              return (
+                <tr key={change.id} className={selectedIds.includes(change.id) ? 'selected-row' : ''}>
+                  <td>
+                    <input 
+                      type="checkbox" 
+                      checked={selectedIds.includes(change.id)}
+                      onChange={() => toggleOne(change.id)}
+                    />
+                  </td>
+                  <td>
+                    <Link href={`/${change.portal || 'it'}/changes/${change.id}`} style={{ color: '#333', textDecoration: 'none', fontWeight: 500 }}>
+                      {change.subject}
+                    </Link>
+                  </td>
+                  <td>{change.owner || 'Sales & Surrounding...'}</td>
+                  <td>{change.category?.name || 'Application'}</td>
+                  <td style={{ textAlign: 'center' }}>-</td>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="legacy-color-box" style={{ background: isNormal ? '#7d87f5' : '#72f37c' }}></span>
+                      {isNormal ? 'Normal Change' : 'Standard Change'}
+                    </div>
+                  </td>
+                  <td style={{ textAlign: 'center' }}>-</td>
+                  <td>{change.stage || 'Submission'}</td>
+                  <td>{change.status.name}</td>
+                </tr>
+              );
+            })}
+            {initialChanges.length === 0 && (
+              <tr>
+                <td colSpan={9} style={{ textAlign: 'center', padding: '40px', color: '#999' }}>No Changes found</td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
-    </>
+    </div>
   );
 }

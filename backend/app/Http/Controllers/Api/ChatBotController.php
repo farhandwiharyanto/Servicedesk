@@ -18,36 +18,71 @@ class ChatBotController extends Controller
         $message = $validated['message'];
         $lowerMessage = Str::lower($message);
 
-        // Simple RAG: Search in Solutions
+        // Tahap 1: Pencarian RAG (Retrieval)
+        // Extract keywords simply or just use the message to search KB
         $relevantSolutions = Solution::where('is_public', true)
             ->where(function ($query) use ($lowerMessage) {
-                $query->where('subject', 'like', "%$lowerMessage%")
-                      ->orWhere('content', 'like', "%$lowerMessage%")
-                      ->orWhere('topic', 'like', "%$lowerMessage%");
+                // Split words and search
+                $words = explode(' ', $lowerMessage);
+                foreach ($words as $word) {
+                    if (strlen($word) > 3) {
+                        $query->orWhere('subject', 'like', "%$word%")
+                              ->orWhere('content', 'like', "%$word%")
+                              ->orWhere('topic', 'like', "%$word%");
+                    }
+                }
             })
             ->take(3)
             ->get();
 
-        if ($relevantSolutions->isNotEmpty()) {
-            $response = "Berdasarkan basis pengetahuan kami, Anda mungkin tertarik dengan: \n";
-            foreach ($relevantSolutions as $solution) {
-                $response .= "- " . $solution->subject . "\n";
-            }
-            $response .= "\nApakah ada hal lain yang bisa saya bantu?";
-        } else {
-            // Keyword fallback
-            if (Str::contains($lowerMessage, ['it', 'komputer', 'wifi'])) {
-                $response = "Untuk masalah teknis seperti itu, silakan kunjungi IT Portal. Kami bisa membantu perbaikan perangkat keras maupun jaringan.";
-            } elseif (Str::contains($lowerMessage, ['hr', 'cuti', 'gaji'])) {
-                $response = "Terkait kebijakan karyawan atau payroll, Anda bisa langsung mengakses HR Portal.";
-            } else {
-                $response = "Mohon maaf, saya belum menemukan solusi yang tepat di basis pengetahuan. Anda bisa mencoba menu IT Portal atau HR Portal untuk bantuan lebih lanjut.";
-            }
+        $context = "Knowledge Base Information:\n";
+        foreach ($relevantSolutions as $idx => $solution) {
+            $context .= "Article " . ($idx + 1) . ": " . $solution->subject . "\n" . strip_tags($solution->content) . "\n\n";
         }
 
-        return response()->json([
-            'answer' => $response,
-            'source' => $relevantSolutions->isNotEmpty() ? 'kb' : 'fallback'
-        ]);
+        // Tahap 2: Augmentation & Generation menggunakan Google Gemini API
+        $apiKey = env('GEMINI_API_KEY');
+        if (!$apiKey) {
+            return response()->json([
+                'answer' => "Halo! Fitur AI Chatbot baru sebagian diluncurkan. Admin harus memasukkan `GEMINI_API_KEY` di file `.env` sistem agar otak AI saya (Google Gemini) dapat menyala sempurna. Saat ini solusi terkait adalah:\n" . $context,
+                'source' => 'system'
+            ]);
+        }
+
+        $systemPrompt = "Kamu adalah Virtual IT Assistant ahli berbahasa Indonesia untuk Zoho Manage ServiceDesk. 
+Tugasmu adalah menjawab keluhan pengguna dengan santun dan profesional.
+PENTING: Gunakan informasi Knowledge Base berikut untuk menjawab jika relevan. Jika informasi di bawah ini tidak dapat menyelesaikan keluhan, sarankan mereka untuk mencari tiket di portal.\n\n";
+        $prompt = $systemPrompt . $context . "\nKeluhan/Pertanyaan Pelanggan: " . $message;
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::post(
+                "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=" . $apiKey,
+                [
+                    'contents' => [
+                        ['parts' => [['text' => $prompt]]]
+                    ]
+                ]
+            );
+
+            if ($response->successful()) {
+                $geminiData = $response->json();
+                $reply = $geminiData['candidates'][0]['content']['parts'][0]['text'] ?? "Maaf, mesin AI gagal memproses kalimat.";
+                return response()->json([
+                    'answer' => $reply,
+                    'source' => 'gemini-ai'
+                ]);
+            }
+
+            return response()->json([
+                'answer' => "Gagal terhubung ke server AI Gemini (HTTP " . $response->status() . ").",
+                'source' => 'error'
+            ], 500);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'answer' => "Terjadi kesalahan internal pada sirkuit AI: " . $e->getMessage(),
+                'source' => 'error'
+            ], 500);
+        }
     }
 }

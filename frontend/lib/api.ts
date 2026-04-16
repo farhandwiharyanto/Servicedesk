@@ -13,6 +13,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const response = await fetch(url, {
     ...options,
     headers,
+    credentials: 'include',
   });
 
   if (!response.ok) {
@@ -31,4 +32,6 @@ export const endpoints = {
   assets: '/assets',
   dashboard: '/dashboard',
   chatbot: '/chatbot',
+  solutions: '/solutions',
+  changes: '/changes',
 };

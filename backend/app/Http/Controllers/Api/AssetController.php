@@ -30,6 +30,12 @@ class AssetController extends Controller
         return response()->json($asset, 201);
     }
 
+    public function show($id)
+    {
+        $asset = Asset::with(['owner', 'site', 'state', 'type'])->findOrFail($id);
+        return response()->json($asset);
+    }
+
     public function destroy(Request $request)
     {
         $request->validate([

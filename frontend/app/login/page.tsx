@@ -55,25 +55,15 @@ function LoginForm() {
     setError('');
     setLoading(true);
 
-    const validCredentials: Record<string, string> = {
-      it_portal: 'password',
-      hr_portal: 'password',
-      fm_portal: 'password',
-      hp_portal: 'password',
-      super_admin: 'password'
-    };
-
-    if (validCredentials[username] === password) {
-      try {
-        await login(username);
-        router.push(callbackUrl);
-      } catch (err) {
-        setError('Gagal masuk ke sistem. Silakan coba lagi.');
-      }
-    } else {
-      setError('Username atau Password salah.');
+    try {
+      // Use the login action which connects to the Laravel backend
+      await login(username, password);
+      router.push(callbackUrl);
+    } catch (err: any) {
+      setError(err.message || 'Username atau Password salah.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (

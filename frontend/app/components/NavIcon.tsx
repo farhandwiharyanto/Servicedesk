@@ -1,7 +1,8 @@
 import React from 'react';
 
-export function NavIcon({ name, size = 24, color = 'currentColor' }: { name: string, size?: number, color?: string }) {
+export function NavIcon({ name, size = 24, color = 'currentColor', style, className }: { name: string, size?: number, color?: string, style?: React.CSSProperties, className?: string }) {
   const icons: Record<string, React.ReactNode> = {
+    // ... icons definitions remain the same
     logo: (
       <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
@@ -141,5 +142,9 @@ export function NavIcon({ name, size = 24, color = 'currentColor' }: { name: str
     )
   };
 
-  return icons[name] || icons.logo;
+  return (
+    <span style={style} className={className ?? 'inline-flex items-center justify-center'}>
+      {icons[name] || icons.logo}
+    </span>
+  );
 }

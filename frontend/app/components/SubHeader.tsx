@@ -12,7 +12,15 @@ interface SubHeaderData {
   urgencies: any[];
 }
 
-export async function SubHeader() {
+interface SubHeaderProps {
+  title?: string;
+  icon?: string;
+}
+
+export async function SubHeader({ 
+  title = "All Tickets", 
+  icon = "requests" 
+}: SubHeaderProps) {
   let categories: any[] = [];
   let priorities: any[] = [];
   let users: any[] = [];
@@ -38,8 +46,8 @@ export async function SubHeader() {
   return (
     <div className="sub-header-modern" style={{ padding: '8px 20px', height: 'auto', gap: '12px' }}>
       <div className="context-breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
-        <NavIcon name="requests" size={18} color="var(--primary)" />
-        <span style={{ fontWeight: 600 }}>All Requests</span>
+        <NavIcon name={icon as any} size={18} color="var(--primary)" />
+        <span style={{ fontWeight: 600 }}>{title}</span>
         <span style={{ color: 'var(--text-muted)' }}>/</span>
         <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Default View</span>
       </div>

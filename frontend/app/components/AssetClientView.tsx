@@ -2,9 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ModuleToolbar } from './ModuleToolbar';
+import { LegacyAssetToolbar } from './LegacyAssetToolbar';
 import { CreateAssetModal } from './CreateAssetModal';
-import { deleteEntity } from '@/app/lib/actions';
 
 interface AssetClientViewProps {
   assets: any[];
@@ -36,39 +35,18 @@ export function AssetClientView({
     );
   };
 
-  async function handleAction(actionId: string) {
-    if (actionId === 'delete') {
-      if (selectedIds.length === 0) return;
-      if (confirm(`Are you sure you want to delete ${selectedIds.length} assets?`)) {
-        try {
-          await deleteEntity('asset', selectedIds);
-          alert('Assets deleted successfully');
-          setSelectedIds([]);
-          window.location.reload();
-        } catch (error) {
-          alert('Error deleting assets');
-        }
-      }
-    } else {
-      alert(`${actionId} triggered for ${selectedIds.length} items.`);
-    }
-  }
-
   return (
-    <>
-      <ModuleToolbar 
-        moduleName="Asset" 
+    <div style={{ flex: 1, overflow: 'hidden' }}>
+      <LegacyAssetToolbar 
         onNew={() => setIsModalOpen(true)}
-        onImport={() => alert('Import Asset feature coming soon.')}
         selectedCount={selectedIds.length}
-        onAction={handleAction}
       />
 
-      <div className="enterprise-table-wrapper-zoho">
-        <table className="zoho-table">
+      <div className="table-legacy-wrap" style={{ margin: 0 }}>
+        <table className="table-legacy">
           <thead>
-            <tr>
-              <th style={{ width: '30px' }}>
+            <tr style={{ background: '#f2f5f7' }}>
+              <th style={{ width: '24px' }}>
                 <input 
                   type="checkbox" 
                   checked={initialAssets.length > 0 && selectedIds.length === initialAssets.length}
@@ -81,7 +59,6 @@ export function AssetClientView({
               <th>State</th>
               <th>User</th>
               <th>Site</th>
-              <th>Serial Number</th>
             </tr>
           </thead>
           <tbody>
@@ -94,23 +71,28 @@ export function AssetClientView({
                     onChange={() => toggleOne(asset.id)}
                   />
                 </td>
-                <td className="subject-cell">
-                  <Link href={`/assets/${asset.id}`} className="zoho-link-bold">
+                <td>
+                  <Link href={`/${asset.portal || 'it'}/assets/${asset.id}`} style={{ color: '#333', textDecoration: 'none', fontWeight: 500 }}>
                     {asset.name}
                   </Link>
                 </td>
-                <td>{asset.tag || '--'}</td>
-                <td>{asset.type?.name || 'Unknown'}</td>
+                <td style={{ color: '#555' }}>{asset.tag || '--'}</td>
+                <td>{asset.type?.name || 'Workstation'}</td>
                 <td>
-                  <span className={`z-status stat-${asset.state?.name.toLowerCase().replace(' ', '-') || 'unknown'}`}>
-                    {asset.state?.name || 'Unknown'}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ color: asset.state?.name.toLowerCase() === 'in use' ? '#10b981' : '#f59e0b' }}>●</span>
+                    {asset.state?.name || 'In Use'}
+                  </div>
                 </td>
-                <td>{asset.owner?.name || 'In Store'}</td>
-                <td>{asset.site?.name || '--'}</td>
-                <td>{asset.serialNumber || '--'}</td>
+                <td>{asset.owner?.name || 'Unassigned'}</td>
+                <td>{asset.site?.name || 'Jakarta'}</td>
               </tr>
             ))}
+            {initialAssets.length === 0 && (
+              <tr>
+                <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#999' }}>No assets found</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -122,6 +104,6 @@ export function AssetClientView({
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
-    </>
+    </div>
   );
 }

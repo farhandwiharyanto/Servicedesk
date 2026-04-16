@@ -2,10 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ModuleToolbar } from './ModuleToolbar';
+import { LegacyProblemToolbar } from './LegacyProblemToolbar';
 import { CreateProblemModal } from './CreateProblemModal';
-import { deleteEntity } from '@/app/lib/actions';
-import { FormattedDate } from './FormattedDate';
 
 interface ProblemClientViewProps {
   problems: any[];
@@ -37,51 +35,30 @@ export function ProblemClientView({
     );
   };
 
-  async function handleAction(actionId: string) {
-    if (actionId === 'delete') {
-      if (selectedIds.length === 0) return;
-      const confirmed = confirm(`Are you sure you want to delete ${selectedIds.length} problems?`);
-      if (confirmed) {
-        try {
-          await deleteEntity('problem', selectedIds);
-          alert('Problems deleted successfully');
-          setSelectedIds([]);
-          window.location.reload();
-        } catch (error) {
-          alert('Error deleting problems');
-        }
-      }
-    } else {
-      alert(`${actionId} triggered for ${selectedIds.length} items.`);
-    }
-  }
-
   return (
-    <>
-      <ModuleToolbar 
-        moduleName="Problem" 
+    <div style={{ flex: 1, overflow: 'hidden' }}>
+      <LegacyProblemToolbar 
         onNew={() => setIsModalOpen(true)}
         selectedCount={selectedIds.length}
-        onAction={handleAction}
       />
 
-      <div className="table-container">
-        <table className="modern-table">
+      <div className="table-legacy-wrap" style={{ margin: 0 }}>
+        <table className="table-legacy">
           <thead>
-            <tr>
-              <th style={{ width: '40px' }}>
+            <tr style={{ background: '#f2f5f7' }}>
+              <th style={{ width: '24px' }}>
                 <input 
                   type="checkbox" 
                   checked={initialProblems.length > 0 && selectedIds.length === initialProblems.length}
                   onChange={toggleAll}
                 />
               </th>
-              <th style={{ width: '100px' }}>ID</th>
+              <th>ID</th>
               <th>Subject</th>
               <th>Status</th>
               <th>Category</th>
               <th>Priority</th>
-              <th>Created</th>
+              <th>Created On</th>
             </tr>
           </thead>
           <tbody>
@@ -94,28 +71,27 @@ export function ProblemClientView({
                     onChange={() => toggleOne(prob.id)}
                   />
                 </td>
-                <td style={{ color: 'var(--text-muted)', fontWeight: 600 }}>#{prob.id.slice(-5).toUpperCase()}</td>
-                <td style={{ fontWeight: 500 }}>
-                  <Link href={`/problems/${prob.id}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>
+                <td style={{ color: '#555' }}>PRB-{prob.id.slice(-5).toUpperCase()}</td>
+                <td>
+                  <Link href={`/${prob.portal || 'it'}/problems/${prob.id}`} style={{ color: '#333', textDecoration: 'none', fontWeight: 500 }}>
                     {prob.subject}
                   </Link>
                 </td>
+                <td>{prob.status.name}</td>
+                <td>{prob.category?.name || 'Network'}</td>
                 <td>
-                  <span className={`badge badge-${prob.status.type.toLowerCase() === 'open' ? 'primary' : prob.status.type.toLowerCase() === 'in_progress' ? 'warning' : 'success'}`}>
-                    {prob.status.name}
-                  </span>
-                </td>
-                <td>{prob.category.name}</td>
-                <td>
-                  <span style={{ fontWeight: 600, color: prob.priority.level === 'HIGH' || prob.priority.level === 'URGENT' ? 'var(--danger)' : 'inherit' }}>
+                  <span style={{ color: ['high', 'urgent'].includes(prob.priority.level.toLowerCase()) ? '#ef4444' : '#6b7280' }}>
                     {prob.priority.name}
                   </span>
                 </td>
-                <td style={{ color: 'var(--text-muted)' }}>
-                  <FormattedDate date={prob.createdAt} />
-                </td>
+                <td>Apr 12, 2026</td>
               </tr>
             ))}
+            {initialProblems.length === 0 && (
+              <tr>
+                <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#999' }}>No problems found</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -127,6 +103,6 @@ export function ProblemClientView({
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
-    </>
+    </div>
   );
 }

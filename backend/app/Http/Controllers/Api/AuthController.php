@@ -13,7 +13,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email' => 'required|email',
+            'email' => 'required',
             'password' => 'required',
         ]);
 
@@ -40,5 +40,10 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         return response()->json($request->user()->load('role'));
+    }
+
+    public function index()
+    {
+        return response()->json(User::with('role')->get());
     }
 }

@@ -13,18 +13,29 @@ export function AppWrapper({
   user: any;
 }) {
   const pathname = usePathname();
-  const isPortalPage = pathname === '/';
-  const isLoginPage = pathname === '/login';
+  const isLoginPage = pathname === '/';
+  const isPortalPage = false; // We use legacy layout for everything else
 
-  React.useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-      document.documentElement.classList.add('dark-mode');
-    }
-  }, []);
-
-  if (isLoginPage || isPortalPage) {
+  if (isLoginPage) {
     return <>{children}</>;
+  }
+
+  if (isPortalPage) {
+    return <>{children}</>;
+  }
+
+  // Legacy layout is now global for all module portals (HR, IT, Facilities)
+  const isLegacyLayout = true;
+
+  if (isLegacyLayout) {
+    return (
+      <div className="legacy-layout app-wrapper" style={{ flexDirection: 'column' }}>
+        <GlobalHeader />
+        <main style={{ flex: 1, backgroundColor: '#f3f4f6' }}>
+          {children}
+        </main>
+      </div>
+    );
   }
 
   return (

@@ -55,15 +55,27 @@ export function DashboardActions({ data }: DashboardActionsProps) {
         </div>
       </button>
       
-      <div className="z-divider" style={{ margin: '12px 0' }} />
+      <div className="z-divider" style={{ margin: '12px 0', opacity: 0.5 }} />
       
-      <div style={{ padding: '8px 12px', background: 'rgba(59, 130, 246, 0.05)', borderRadius: '8px', border: '1px dashed rgba(59, 130, 246, 0.2)' }}>
-        <p style={{ fontSize: '11px', color: 'var(--primary)', fontWeight: 600, margin: 0 }}>
-          <NavIcon name="bell" size={12} /> SLA Automation Active
+      <div className="animate-float" style={{ 
+        padding: '16px', 
+        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.1))', 
+        borderRadius: '16px', 
+        border: '1px solid rgba(59, 130, 246, 0.15)',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <p style={{ fontSize: '13px', color: 'var(--primary)', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <NavIcon name="bolt" size={14} /> SLA Automation Active
         </p>
-        <p style={{ fontSize: '10px', color: 'var(--text-muted)', margin: '4px 0 0' }}>
-          Overdue alerts are now processed automatically by the system.
+        <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '8px 0 0', lineHeight: 1.5 }}>
+          Overdue alerts are now processed automatically by the AI engine.
         </p>
+        {/* Subtle background glow */}
+        <div style={{ 
+          position: 'absolute', top: '-20px', right: '-20px', width: '60px', height: '60px', 
+          background: 'var(--primary)', filter: 'blur(40px)', opacity: 0.1 
+        }} />
       </div>
 
       <CreateTicketModal 

@@ -1,1 +1,6 @@
 node_modules
+.next
+.DS_Store
+*.pid
+*.log
+backend/database/database.sqlite

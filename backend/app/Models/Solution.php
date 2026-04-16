@@ -8,6 +8,5 @@ use App\Traits\HasUuids;
 class Solution extends Model
 {
     use HasUuids;
-
     protected $guarded = [];
 }

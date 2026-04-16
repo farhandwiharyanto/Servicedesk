@@ -14,9 +14,12 @@ export function FormattedDate({ date }: { date: string | Date }) {
     return <span style={{ opacity: 0 }}>...</span>;
   }
 
+  const dateObj = new Date(date);
+  const isValid = date && !isNaN(dateObj.getTime());
+
   return (
     <span suppressHydrationWarning>
-      {new Date(date).toLocaleDateString()}
+      {isValid ? dateObj.toLocaleDateString() : '--'}
     </span>
   );
 }

@@ -121,7 +121,7 @@ const NavGroup = ({ title, modules, forceOpen = false, expandedGroups, isSuper, 
 
 export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
-  const isSuper = user?.role === 'super' || user?.role?.name === 'Administrator';
+  const isSuper = user?.role === 'super' || (user?.role as {name?: string})?.name === 'Administrator';
   
   const [csModal, setCsModal] = useState<{ open: boolean; name: string }>({ open: false, name: '' });
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
@@ -150,7 +150,7 @@ export function Sidebar({ user }: SidebarProps) {
   const moduleConfigs: Record<string, { label: string; icon: string; path: string; isComingSoon?: boolean }[]> = {
     IT: [
       { label: 'IT Dashboard', icon: 'dashboard', path: '/it' },
-      { label: 'Requests', icon: 'requests', path: '/it/requests' },
+      { label: 'Tickets', icon: 'requests', path: '/it/tickets' },
       { label: 'Problems', icon: 'problems', path: '/it/problems' },
       { label: 'Changes', icon: 'changes', path: '/it/changes' },
       { label: 'Asset Inventory', icon: 'assets', path: '/it/assets' },
