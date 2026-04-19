@@ -11,18 +11,57 @@ use Illuminate\Http\Request;
 
 class TicketController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $requests = TicketRequest::with(['requester', 'technician', 'status', 'priority', 'category', 'site'])->latest()->get();
+        $query = TicketRequest::with([
+            'requester', 'technician', 'status', 'priority', 'category', 'site', 
+            'group', 'l2_group', 'incident_manager'
+        ]);
+
+        // Capture all requests for counts before filtering
+        $allRequests = (clone $query)->get();
+
+        // Apply Status Filter
+        $status = $request->get('status', 'OPEN');
+        if ($status !== 'ALL') {
+            if ($status === 'OVERDUE') {
+                $query->where(function($q) {
+                    $q->where('due_at', '<', now())
+                      ->whereHas('status', function($sq) {
+                          $sq->whereNotIn('type', ['RESOLVED', 'CLOSED']);
+                      });
+                });
+            } elseif ($status === 'DUE_TODAY') {
+                $query->whereDate('due_at', now()->toDateString())
+                      ->whereHas('status', fn($q) => $q->whereNotIn('type', ['RESOLVED', 'CLOSED']));
+            } elseif ($status === 'PENDING') {
+                $query->whereHas('status', fn($q) => $q->whereNotIn('type', ['RESOLVED', 'CLOSED']));
+            } elseif ($status === 'NEED_CLARIFICATION') {
+                $query->whereHas('status', fn($q) => $q->where('type', 'AI_PENDING_USER'));
+            } else {
+                $query->whereHas('status', function($q) use ($status) {
+                    $q->where('type', $status);
+                });
+            }
+        }
+
+        $requests = $query->latest()->get();
         
         $counts = [
-            'all' => $requests->count(),
-            'open' => $requests->filter(fn($r) => $r->status->type === 'OPEN')->count(),
-            'in_progress' => $requests->filter(fn($r) => $r->status->type === 'IN_PROGRESS')->count(),
-            'on_hold' => $requests->filter(fn($r) => $r->status->type === 'ON_HOLD')->count(),
-            'resolved' => $requests->filter(fn($r) => $r->status->type === 'RESOLVED')->count(),
-            'closed' => $requests->filter(fn($r) => $r->status->type === 'CLOSED')->count(),
-            'overdue' => $requests->filter(fn($r) => $r->due_at && $r->due_at < now() && !in_array($r->status->type, ['RESOLVED', 'CLOSED']))->count(),
+            'all' => $allRequests->count(),
+            'open' => $allRequests->filter(fn($r) => $r->status?->type === 'OPEN')->count(),
+            'in_progress' => $allRequests->filter(fn($r) => $r->status?->type === 'IN_PROGRESS')->count(),
+            'on_hold' => $allRequests->filter(fn($r) => $r->status?->type === 'ON_HOLD')->count(),
+            'resolved' => $allRequests->filter(fn($r) => $r->status?->type === 'RESOLVED')->count(),
+            'closed' => $allRequests->filter(fn($r) => $r->status?->type === 'CLOSED')->count(),
+            'overdue' => $allRequests->filter(fn($r) => $r->due_at && $r->due_at < now() && !in_array($r->status?->type, ['RESOLVED', 'CLOSED']))->count(),
+            // New Enterprise Filters
+            'need_clarification' => $allRequests->filter(fn($r) => $r->status?->type === 'AI_PENDING_USER')->count(),
+            'due_today' => $allRequests->filter(fn($r) => $r->due_at && $r->due_at->isToday() && !in_array($r->status?->type, ['RESOLVED', 'CLOSED']))->count(),
+            'pending' => $allRequests->filter(fn($r) => !in_array($r->status?->type, ['RESOLVED', 'CLOSED']))->count(),
+            'approved_changes' => \App\Models\Change::whereHas('status', fn($q) => $q->where('name', 'Approved'))->count(),
+            'open_problems' => Problem::whereHas('status', fn($q) => $q->whereNotIn('type', ['RESOLVED', 'CLOSED']))->count(),
+            'unassigned_problems' => Problem::whereNull('technician_id')->count(),
         ];
 
         return response()->json([
@@ -42,15 +81,43 @@ class TicketController extends Controller
         return response()->json(\App\Models\Change::with(['technician', 'status', 'priority', 'category'])->latest()->get());
     }
 
+    public function getMetadata()
+    {
+        return response()->json([
+            'categories' => \App\Models\Category::all(['id', 'name']),
+            'statuses' => \App\Models\Status::all(['id', 'name', 'type']),
+            'priorities' => \App\Models\Priority::all(['id', 'name', 'level']),
+            'sites' => \App\Models\Site::all(['id', 'name']),
+            'groups' => \App\Models\Group::all(['id', 'name']),
+            'technicians' => \App\Models\User::whereHas('role', function($q) {
+                 $q->whereIn('name', ['Technician', 'Administrator']);
+            })->get(['id', 'name']),
+            // Constant Enterprise Lookups
+            'modes' => [
+                'Service Portal', 'Not Specified', 'Chat', 'E-Mail', 'Phone Call', 'Talita', 'Teams'
+            ],
+            'solution_types' => [
+                'Dispatch By Helpdesk', 'Not Specified', 'ATS', 'Infra', 'Data Correction', 'Enhancement', "Can't Reproduce"
+            ],
+            'pentaho_items' => [
+                'Pengecekan ETL / Job', 'Not Assigned', 'Pembuatan ETL Baru', 'Perbaikan ETL / Simplifikasi / Tunning'
+            ],
+            'request_types' => [
+                'Customer Request', 'Service Request', 'Incident', 'Complaint'
+            ]
+        ]);
+    }
+
     public function show($id)
     {
         // Try to find a Request
         $record = TicketRequest::with([
-            'requester', 'technician', 'status', 'priority', 'category', 'site', 'group', 'comments.user'
+            'requester', 'technician', 'status', 'priority', 'category', 'site', 'group', 
+            'l2_group', 'incident_manager', 'created_by', 'initial_handler', 'comments.user'
         ])->find($id) 
         // Or try to find a Problem
         ?? Problem::with([
-            'technician', 'status', 'priority', 'category', 'impact', 'urgency'
+            'technician', 'status', 'priority', 'category', 'impact', 'urgency', 'requests.requester', 'requests.status'
         ])->find($id)
         // Or try to find a Change
         ?? \App\Models\Change::with([
@@ -64,6 +131,55 @@ class TicketController extends Controller
         return response()->json($record);
     }
 
+    public function updateProblem(Request $request, $id)
+    {
+        $problem = Problem::find($id);
+        if (!$problem) return response()->json(['message' => 'Problem not found'], 404);
+
+        $validated = $request->validate([
+            'subject' => 'nullable|string',
+            'description' => 'nullable|string',
+            'root_cause' => 'nullable|string',
+            'symptoms' => 'nullable|string',
+            'impact_analysis' => 'nullable|string',
+            'workaround' => 'nullable|string',
+            'permanent_solution' => 'nullable|string',
+            'status_id' => 'nullable|uuid|exists:statuses,id',
+            'priority_id' => 'nullable|uuid|exists:priorities,id',
+            'technician_id' => 'nullable|uuid|exists:users,id',
+        ]);
+
+        $problem->update($validated);
+
+        return response()->json($problem->load(['status', 'priority', 'technician']));
+    }
+
+    public function publishKnownError(Request $request, $id)
+    {
+        $problem = Problem::find($id);
+        if (!$problem) return response()->json(['message' => 'Problem not found'], 404);
+
+        if (!$problem->workaround) {
+            return response()->json(['message' => 'No workaround found to publish.'], 400);
+        }
+
+        // Check if already published (optional, but good for UX)
+        $existing = \App\Models\Solution::where('subject', 'LIKE', "Known Error: %{$problem->subject}%")->first();
+        if ($existing) return response()->json(['message' => 'Already published to Knowledge Base.'], 400);
+
+        $solution = \App\Models\Solution::create([
+            'subject' => "Known Error: " . $problem->subject,
+            'content' => "<h3>Workaround</h3><p>{$problem->workaround}</p><h3>Root Cause</h3><p>{$problem->root_cause}</p>",
+            'topic' => $problem->category->name ?? 'General',
+            'status' => 'Published'
+        ]);
+
+        return response()->json([
+            'message' => 'Successfully published as Known Error.',
+            'solution' => $solution
+        ]);
+    }
+
     public function storeRequest(Request $request)
     {
         $validated = $request->validate([
@@ -75,26 +191,46 @@ class TicketController extends Controller
             'status_id' => 'nullable|uuid|exists:statuses,id',
             'site_id' => 'nullable|uuid|exists:sites,id',
             'group_id' => 'nullable|uuid|exists:groups,id',
+            'technician_id' => 'nullable|uuid|exists:users,id',
+            'impact_id' => 'nullable|uuid|exists:impacts,id',
+            'urgency_id' => 'nullable|uuid|exists:urgencies,id',
+            'request_type' => 'nullable|string',
+            'mode' => 'nullable|string',
+            'subcategory' => 'nullable|string',
+            'item' => 'nullable|string',
+            'vendor_ticket_no' => 'nullable|string',
+            'sprint' => 'nullable|string',
+            'solution_type' => 'nullable|string',
+            'maintenance_title' => 'nullable|string',
             'due_at' => 'nullable|date',
         ]);
 
-        // Default to AI Triage if no status provided
+        // Default values for a new SaaS-inspired ticket
         if (!isset($validated['status_id'])) {
-            $aiTriageStatus = \App\Models\Status::where('type', 'AI_PROCESSING')->first();
-            $validated['status_id'] = $aiTriageStatus?->id;
+            $defaultStatus = \App\Models\Status::where('type', 'OPEN')->first();
+            $validated['status_id'] = $defaultStatus?->id;
         }
 
-        // Set Default SLA (2 hours) if no due_at provided
-        if (!isset($validated['due_at'])) {
-            $validated['due_at'] = now()->addHours(2);
+        // Set Created By (Assuming Master Admin for now if not authenticated)
+        $admin = \App\Models\User::where('name', 'Master Admin')->first();
+        $validated['created_by_id'] = $admin?->id;
+
+        // Default dates
+        if (!isset($validated['response_due_at'])) {
+            $validated['response_due_at'] = now()->addDay();
         }
+        if (!isset($validated['due_at'])) {
+            $validated['due_at'] = now()->addWeek();
+        }
+        
+        $validated['ola_due_at'] = now()->addDays(3);
 
         $ticket = TicketRequest::create($validated);
 
-        // Trigger AI Auto-Reply in the background (or synchronously for now)
+        // Trigger AI Auto-Reply
         $this->processAiAutoReply($ticket);
 
-        return response()->json($ticket->load(['status']), 201);
+        return response()->json($ticket->load(['status', 'priority', 'category', 'site', 'group', 'technician']), 201);
     }
 
     public function storeProblem(Request $request)
@@ -130,147 +266,17 @@ class TicketController extends Controller
 
     public function suggestCategory(Request $request)
     {
-        $validated = $request->validate([
-            'subject' => 'required|string',
-            'description' => 'nullable|string'
-        ]);
-
-        $apiKey = env('GEMINI_API_KEY');
-        if (!$apiKey) {
-            return response()->json(['error' => 'No API Key configured.'], 503);
-        }
-
-        $categories = \App\Models\Category::all(['id', 'name']);
-        $priorities = \App\Models\Priority::all(['id', 'name', 'level']);
-        $impacts = \App\Models\Impact::all(['id', 'name']);
-        $urgencies = \App\Models\Urgency::all(['id', 'name']);
-
-        $categoryList = $categories->map(fn($c) => "[ID: {$c->id}] {$c->name}")->implode("\n");
-        $priorityList = $priorities->map(fn($p) => "[ID: {$p->id}] {$p->name} ({$p->level})")->implode("\n");
-        $impactList = $impacts->map(fn($i) => "[ID: {$i->id}] {$i->name}")->implode("\n");
-        $urgencyList = $urgencies->map(fn($u) => "[ID: {$u->id}] {$u->name}")->implode("\n");
-
-        $systemPrompt = "You are an AI Ticket Classifier. Your job is to strictly output ONLY valid JSON. Predict the most suitable IDs based on the user's report.\n\n";
-        $systemPrompt .= "VALID CATEGORIES:\n{$categoryList}\n\n";
-        $systemPrompt .= "VALID PRIORITIES:\n{$priorityList}\n\n";
-        $systemPrompt .= "VALID IMPACTS:\n{$impactList}\n\n";
-        $systemPrompt .= "VALID URGENCIES:\n{$urgencyList}\n\n";
-        
-        $prompt = $systemPrompt . "User Subject: " . $validated['subject'] . "\nUser Description: " . ($validated['description'] ?? '');
-        $prompt .= "\n\nYou must return exactly this JSON format: {\"category_id\": \"uuid\", \"priority_id\": \"uuid\", \"impact_id\": \"uuid\", \"urgency_id\": \"uuid\"}";
-
-        try {
-            $response = \Illuminate\Support\Facades\Http::post(
-                "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=" . $apiKey,
-                [
-                    'contents' => [['parts' => [['text' => $prompt]]]],
-                    'generationConfig' => ['responseMimeType' => 'application/json']
-                ]
-            );
-
-            if ($response->successful()) {
-                $geminiData = $response->json();
-                $reply = $geminiData['candidates'][0]['content']['parts'][0]['text'] ?? "{}";
-                
-                // Clean up any potential markdown or whitespace
-                $reply = trim($reply);
-                if (strpos($reply, '```') !== false) {
-                    $reply = preg_replace('/^```(?:json)?|```$/m', '', $reply);
-                }
-
-                $decoded = json_decode($reply, true);
-                return response()->json($decoded ?: ['error' => 'Invalid JSON structure from AI']);
-            }
-
-            \Illuminate\Support\Facades\Log::error("Gemini Suggestion API Error: " . $response->body());
-            return response()->json(['error' => 'API Request failed: ' . ($response->json()['error']['message'] ?? 'Unknown Error')], 500);
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Gemini Suggestion Internal Error: " . $e->getMessage());
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
+        // AI Disabled to prevent errors
+        return response()->json(['message' => 'AI Auto-Fill is currently disabled.'], 200);
     }
     public function smartSolutions($id)
     {
-        $ticket = TicketRequest::with('category')->find($id) ?? Problem::with('category')->find($id);
-        if (!$ticket) return response()->json(['error' => 'Ticket not found'], 404);
-
-        $apiKey = env('GEMINI_API_KEY');
-        if (!$apiKey) return response()->json(['suggestion' => 'AI is sleeping. No Gemini API Key found.']);
-
-        $solutions = \App\Models\Solution::take(5)->get();
-        $kbText = $solutions->map(fn($s) => "Title: {$s->subject}\nContent: " . strip_tags($s->content))->implode("\n\n");
-
-        $systemPrompt = "You are a Level 3 IT Support AI. Analyze the Ticket below and provide a concise, professional step-by-step resolution suggestion based on your general knowledge and the provided internal Knowledge Base. Use Markdown formatting. Keep it under 200 words.\n\n";
-        $systemPrompt .= "KNOWLEDGE BASE:\n{$kbText}\n\n";
-        $prompt = $systemPrompt . "TICKET SUBJECT: {$ticket->subject}\nTICKET DESC: {$ticket->description}\n";
-
-        try {
-            $response = \Illuminate\Support\Facades\Http::post(
-                "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=" . $apiKey,
-                ['contents' => [['parts' => [['text' => $prompt]]]]]
-            );
-
-            if ($response->status() === 429) {
-                return response()->json(['suggestion' => 'AI Engine is busy (Rate Limit Reached). Please try again in 1 minute.']);
-            }
-
-            if ($response->successful()) {
-                $geminiData = $response->json();
-                $reply = $geminiData['candidates'][0]['content']['parts'][0]['text'] ?? "Unable to generate a solution.";
-                \Illuminate\Support\Facades\Log::info("Gemini Solution Response: " . $reply);
-                return response()->json(['suggestion' => $reply]);
-            }
-            
-            \Illuminate\Support\Facades\Log::error("Gemini Solution API Error: " . $response->body());
-            return response()->json(['suggestion' => 'Failed to reach AI Engine (HTTP ' . $response->status() . ').']);
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Gemini Solution Internal Error: " . $e->getMessage());
-            return response()->json(['suggestion' => 'Internal AI Error.']);
-        }
+        return response()->json(['suggestion' => 'AI Solutions are currently disabled.']);
     }
 
     public function predictSentiment($id)
     {
-        $ticket = TicketRequest::find($id) ?? Problem::find($id);
-        if (!$ticket) return response()->json(['error' => 'Ticket not found'], 404);
-
-        $apiKey = env('GEMINI_API_KEY');
-        if (!$apiKey) return response()->json(['mood' => 'Unknown', 'score' => 50, 'is_panicking' => false]);
-
-        $prompt = "Analyze the sentiment of this IT ticket. Strictly return ONLY valid JSON.\nFormat: {\"mood\": \"Normal/Angry/Panicky/Frustrated/Grateful/Sad\", \"score\": 0-100 (where 0 is very calm, 100 is extremely emotional/panicking), \"is_panicking\": boolean}\n\nTicket Subject: {$ticket->subject}\nTicket Description: {$ticket->description}";
-
-        try {
-            $response = \Illuminate\Support\Facades\Http::post(
-                "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=" . $apiKey,
-                [
-                    'contents' => [['parts' => [['text' => $prompt]]]],
-                    'generationConfig' => ['responseMimeType' => 'application/json']
-                ]
-            );
-
-            if ($response->status() === 429) {
-                return response()->json(['mood' => 'Limit Reached', 'score' => 50, 'is_panicking' => false]);
-            }
-
-            if ($response->successful()) {
-                $geminiData = $response->json();
-                $reply = $geminiData['candidates'][0]['content']['parts'][0]['text'] ?? "{}";
-                \Illuminate\Support\Facades\Log::info("Gemini Sentiment Response: " . $reply);
-
-                // Clean markdown artifacts if present
-                $reply = preg_replace('/^```json\s*/i', '', $reply);
-                $reply = preg_replace('/\s*```$/i', '', $reply);
-                
-                $decoded = json_decode($reply, true);
-                if ($decoded) return response()->json($decoded);
-            }
-            
-            \Illuminate\Support\Facades\Log::error("Gemini Sentiment API Error: " . $response->body());
-            return response()->json(['mood' => 'AI Overloaded', 'score' => 50, 'is_panicking' => false]);
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Gemini Sentiment Internal Error: " . $e->getMessage());
-            return response()->json(['mood' => 'API Error', 'score' => 50, 'is_panicking' => false]);
-        }
+        return response()->json(['mood' => 'Neutral', 'score' => 50, 'is_panicking' => false]);
     }
 
     public function runSlaCheck(Request $request)
@@ -331,20 +337,62 @@ class TicketController extends Controller
     {
         $validated = $request->validate([
             'message' => 'required|string',
+            'subject' => 'nullable|string',
             'is_internal' => 'nullable|boolean'
         ]);
 
         $ticket = TicketRequest::find($id) ?? Problem::find($id);
         if (!$ticket) return response()->json(['message' => 'Ticket not found'], 404);
 
-        // For now, simulate current user as Admin/System
+        $isInternal = $validated['is_internal'] ?? false;
+        $message = $validated['message'];
+        $subject = $validated['subject'] ?? ($ticket instanceof TicketRequest ? "Re: Ticket #{$ticket->id} - {$ticket->subject}" : "Re: Issue Report #{$ticket->id}");
+
+        // If it's a Reply (External), use Gemini to polish or template the email
+        if (!$isInternal) {
+            $apiKey = env('GEMINI_API_KEY');
+            if ($apiKey) {
+                try {
+                    $recipient = $ticket->requester->name ?? 'User';
+                    $prompt = "You are an IT Support Helpdesk. Create a professional, polite, and clear email response based on this technician's draft. 
+                    Strictly follow the Zoho ServiceDesk enterprise style.
+                    
+                    DRAFT: \"{$message}\"
+                    TICKET SUBJECT: {$ticket->subject}
+                    RECIPIENT: {$recipient}
+                    
+                    Return ONLY the polished email content (no greeting/signature labels like [Sincerely], just the text). Use professional Indonesian if the draft is in Indonesian.";
+
+                    $response = \Illuminate\Support\Facades\Http::post(
+                        "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=" . $apiKey,
+                        ['contents' => [['parts' => [['text' => $prompt]]]]]
+                    );
+
+                    if ($response->successful()) {
+                        $polished = $response->json()['candidates'][0]['content']['parts'][0]['text'] ?? $message;
+                        $message = "**[SENT VIA EMAIL]**\n\n" . trim($polished);
+                    } else {
+                        $message = "**[SENT VIA EMAIL]**\n\n" . $message;
+                    }
+                } catch (\Exception $e) {
+                    $message = "**[SENT VIA EMAIL]**\n\n" . $message;
+                }
+            } else {
+                $message = "**[SENT VIA EMAIL]**\n\n" . $message;
+            }
+        } else {
+            $message = "**[INTERNAL NOTE]**\n\n" . $message;
+        }
+
+        // For now, simulate current user as System/Admin
         $user = User::where('email', 'admin@servicedesk.com')->first();
 
         $comment = Comment::create([
             'request_id' => $ticket instanceof TicketRequest ? $ticket->id : null,
-            // If it's a problem, we might need a problem_id column, but current schema is for Requests
             'user_id' => $user->id,
-            'message' => $validated['message'],
+            'message' => $message,
+            'subject' => $subject,
+            'is_internal' => $isInternal,
         ]);
 
         return response()->json($comment->load('user'), 201);
@@ -362,6 +410,77 @@ class TicketController extends Controller
         $ticket->update(['technician_id' => $validated['technician_id']]);
 
         return response()->json($ticket->load('technician'));
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'status_type' => 'required|string|in:RESOLVED,CLOSED,OPEN,IN_PROGRESS'
+        ]);
+
+        $ticket = TicketRequest::find($id) ?? Problem::find($id);
+        if (!$ticket) return response()->json(['message' => 'Ticket not found'], 404);
+
+        $status = \App\Models\Status::where('type', $validated['status_type'])->first();
+        if (!$status) return response()->json(['message' => 'Status not found'], 404);
+
+        $ticket->update(['status_id' => $status->id]);
+
+        // Add a comment about the status change
+        $user = User::where('email', 'admin@itportal.com')->first(); // Manual assign as system/admin for now
+        Comment::create([
+            'request_id' => $ticket instanceof TicketRequest ? $ticket->id : null,
+            'user_id' => $user?->id,
+            'message' => "**[STATUS CHANGE]**\nTiket ditandai sebagai **{$status->name}** secara manual oleh Teknisi.",
+        ]);
+
+        return response()->json($ticket->load('status'));
+    }
+
+    public function updateRequest(Request $request, $id)
+    {
+        $ticket = TicketRequest::find($id);
+        if (!$ticket) return response()->json(['message' => 'Request not found'], 404);
+
+        $validated = $request->validate([
+            'request_type' => 'nullable|string',
+            'status_id' => 'nullable|uuid|exists:statuses,id',
+            'mode' => 'nullable|string',
+            'category_id' => 'nullable|uuid|exists:categories,id',
+            'subcategory' => 'nullable|string',
+            'item' => 'nullable|string',
+            'priority_id' => 'nullable|uuid|exists:priorities,id',
+            'progress_status' => 'nullable|string',
+            'department_name' => 'nullable|string',
+            'template' => 'nullable|string',
+            'site_id' => 'nullable|uuid|exists:sites,id',
+            'group_id' => 'nullable|uuid|exists:groups,id',
+            'technician_id' => 'nullable|uuid|exists:users,id',
+            'vendor_ticket_no' => 'nullable|string',
+            'sprint' => 'nullable|string',
+            'solution_type' => 'nullable|string',
+            'due_at' => 'nullable|date',
+            'maintenance_title' => 'nullable|string',
+            'closure_code' => 'nullable|string',
+            'closure_comments' => 'nullable|string',
+            'incident_manager_id' => 'nullable|uuid|exists:users,id',
+            'l2_group_id' => 'nullable|uuid|exists:groups,id',
+            'assets' => 'nullable|string',
+            'sla_name' => 'nullable|string',
+            'scheduled_start_at' => 'nullable|date',
+            'scheduled_end_at' => 'nullable|date',
+            'response_due_at' => 'nullable|date',
+            'ola_due_at' => 'nullable|date',
+            'initial_handler_id' => 'nullable|uuid|exists:users,id',
+            'time_elapsed' => 'nullable|string',
+        ]);
+
+        $ticket->update($validated);
+
+        return response()->json($ticket->load([
+            'status', 'priority', 'category', 'site', 'group', 'l2_group', 
+            'incident_manager', 'technician', 'created_by', 'initial_handler'
+        ]));
     }
 
     private function processAiAutoReply(TicketRequest $ticket)
@@ -390,5 +509,9 @@ class TicketController extends Controller
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error("AI Auto-Reply failed: " . $e->getMessage());
         }
+    }
+    public function summarize($id)
+    {
+        return response()->json(['summary' => 'AI Summarization is currently disabled.']);
     }
 }

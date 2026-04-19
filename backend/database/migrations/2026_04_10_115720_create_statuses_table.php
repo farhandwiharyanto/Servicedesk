@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('statuses', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name')->unique();
-            $table->enum('type', ['OPEN', 'IN_PROGRESS', 'ON_HOLD', 'RESOLVED', 'CLOSED', 'AI_PROCESSING', 'AI_PENDING_USER', 'ESCALATED'])->default('OPEN');
+            $table->enum('type', ['OPEN', 'IN_PROGRESS', 'ON_HOLD', 'RESOLVED', 'CLOSED', 'REJECTED', 'AI_PROCESSING', 'AI_PENDING_USER', 'ESCALATED'])->default('OPEN');
             $table->timestamps();
         });
     }

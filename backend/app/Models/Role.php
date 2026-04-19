@@ -9,4 +9,8 @@ class Role extends Model
 {
     use HasUuids;
     protected $guarded = [];
+
+    protected $casts = [
+        'permissions' => 'array',
+    ];
 }

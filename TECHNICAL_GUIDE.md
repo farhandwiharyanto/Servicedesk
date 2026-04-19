@@ -36,6 +36,7 @@ The following endpoints are now live and serving the frontend:
 - `GET    /api/tickets`: List of all Requests and Problems.
 - `GET    /api/tickets/{id}`: Detail view for a specific request.
 - `POST   /api/tickets/request`: Create a new service request.
+- `POST   /api/inbound-email`: Automated email-to-ticket creation endpoint.
 - `GET    /api/assets`: Inventory list (Hardware/Software).
 - `GET    /api/changes`: Change management list.
 - `GET    /api/solutions`: Public Knowledge Base articles.

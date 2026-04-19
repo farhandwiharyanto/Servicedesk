@@ -27,32 +27,51 @@ export function GlobalHeader() {
   const [users, setUsers] = useState([]);
   const [impacts, setImpacts] = useState([]);
   const [urgencies, setUrgencies] = useState([]);
+  const [groups, setGroups] = useState([]);
 
   useEffect(() => {
     async function initHeaderData() {
       try {
+        // Try reading identity from cookie first for immediate response
+        const userCookie = document.cookie.split('; ').find(row => row.startsWith('portal_user_logged_in='));
+        if (userCookie) {
+          try {
+            const rawValue = decodeURIComponent(userCookie.split('=')[1]);
+            // If it's a JSON string, parse it
+            if (rawValue.startsWith('{')) {
+              setCurrentUser(JSON.parse(rawValue));
+            }
+          } catch (e) {
+            console.warn("Failed to parse user cookie", e);
+          }
+        }
+
+        // Still try fetching user from API for real-time sync if possible
+        const userRes = await apiFetch('/user').catch(() => null);
+        if (userRes) {
+          setCurrentUser(userRes);
+        }
+
         const results = await Promise.allSettled([
-          apiFetch('/user'),
           apiFetch(endpoints.tickets),
           apiFetch(endpoints.lookups)
         ]);
         
-        if (results[0].status === 'fulfilled') setCurrentUser(results[0].value);
-        
-        if (results[1].status === 'fulfilled') {
-          const ticketData = results[1].value;
+        if (results[0].status === 'fulfilled') {
+          const ticketData = results[0].value;
           if (ticketData && ticketData.requests) {
              setRecentActivities(ticketData.requests.slice(0, 10));
           }
         }
 
-        if (results[2].status === 'fulfilled') {
-          const lookups = results[2].value;
+        if (results[1].status === 'fulfilled') {
+          const lookups = results[1].value;
           setCategories(lookups.categories || []);
           setPriorities(lookups.priorities || []);
           setUsers(lookups.users || []);
           setImpacts(lookups.impacts || []);
           setUrgencies(lookups.urgencies || []);
+          setGroups(lookups.groups || []);
         }
       } catch (err) {
         console.error("Failed to initialize header data", err);
@@ -72,6 +91,16 @@ export function GlobalHeader() {
   const portalBase = pathname.split('/')[1] || 'it';
   const isLegacyLayout = true;
 
+  // 1. Differentiate Portal Visuals (Branding & Titles)
+  const portalBranding: Record<string, { title: string; color: string; bg: string }> = {
+    it: { title: 'IT Portal Management', color: '#3b82f6', bg: '#232f3e' },
+    hr: { title: 'HR Portal Management', color: '#8b5cf6', bg: '#4c1d95' },
+    facilities: { title: 'Facilities Portal Management', color: '#10b981', bg: '#064e3b' },
+    housekeeping: { title: 'Housekeeping Portal Management', color: '#64748b', bg: '#1e293b' },
+  };
+
+  const currentBranding = portalBranding[portalBase] || portalBranding.it;
+
   const itTabs = [
     { name: 'Home', path: `/${portalBase}` },
     { name: 'Dashboard', path: `/${portalBase}/dashboard` },
@@ -81,112 +110,166 @@ export function GlobalHeader() {
     { name: 'Solutions', path: `/${portalBase}/solutions` },
     { name: 'Assets', path: `/${portalBase}/assets` },
     { name: 'Reports', path: `/${portalBase}/reports` },
+    { name: 'Role', path: `/${portalBase}/roles` },
   ];
 
-  const hrTabs = [
-    { name: 'Home', path: `/${portalBase}` },
-    { name: 'Cases', path: `/${portalBase}/cases` },
-    { name: 'Employees', path: `/${portalBase}/employees` },
-    { name: 'Solutions', path: `/${portalBase}/solutions` },
-    { name: 'Reports', path: `/${portalBase}/reports` },
-  ];
+  // 2. Simplified navigation for non-IT portals as requested
+  const hrTabs = [{ name: 'Home', path: `/${portalBase}` }];
+  const facilitiesTabs = [{ name: 'Home', path: `/${portalBase}` }];
+  const housekeepingTabs = [{ name: 'Home', path: `/${portalBase}` }];
 
-  const facilitiesTabs = [
-    { name: 'Home', path: `/${portalBase}` },
-    { name: 'Work Orders', path: `/${portalBase}/work-orders` },
-    { name: 'Assets', path: `/${portalBase}/assets` },
-    { name: 'Maintenance', path: `/${portalBase}/maintenance` },
-    { name: 'Reports', path: `/${portalBase}/reports` },
-  ];
-
-  const tabs = portalBase === 'hr' ? hrTabs : portalBase === 'facilities' ? facilitiesTabs : itTabs;
+  const tabs = portalBase === 'hr' ? hrTabs 
+             : portalBase === 'facilities' ? facilitiesTabs 
+             : portalBase === 'housekeeping' ? housekeepingTabs 
+             : itTabs;
 
   if (isLegacyLayout) {
     return (
-      <header className="legacy-header-container">
-        <div className="legacy-top-nav-wrap">
-          <div className="legacy-top-nav-logo" style={{ fontSize: '14px', whiteSpace: 'nowrap' }}>
-            IT Portal Management
+      <header className="legacy-header-container" style={{ background: '#0f172a', borderBottom: '1px solid rgba(255,255,255,0.05)', height: '56px', display: 'flex', alignItems: 'center' }}>
+        <div className="legacy-top-nav-wrap" style={{ padding: '0 24px', display: 'flex', alignItems: 'center', width: '100%', gap: '32px' }}>
+          <div className="legacy-top-nav-logo" style={{ fontSize: '15px', fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ width: '24px', height: '24px', background: 'var(--grad-primary)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <NavIcon name="logo" color="#fff" size={14} />
+            </div>
+            IT PORTAL MANAGEMENT
           </div>
-          <div className="legacy-top-nav-tabs">
-            {tabs.map(tab => (
-              <a 
-                key={tab.name}
-                href={tab.path} 
-                className={`legacy-top-nav-tab ${pathname === tab.path || (tab.path !== `/${portalBase}` && pathname.startsWith(tab.path)) ? 'active' : ''}`}
-              >
-                {tab.name}
-              </a>
-            ))}
-          </div>
+          
+          <nav className="legacy-top-nav-tabs" style={{ display: 'flex', gap: '4px' }}>
+            {tabs.map(tab => {
+              const isActive = pathname === tab.path || (tab.path !== `/${portalBase}` && pathname.startsWith(tab.path));
+              return (
+                <a 
+                  key={tab.name}
+                  href={tab.path} 
+                  className={`legacy-top-nav-tab ${isActive ? 'active' : ''}`}
+                  style={{ 
+                    padding: '0 16px', height: '36px', display: 'flex', alignItems: 'center', 
+                    fontSize: '13px', fontWeight: isActive ? 700 : 500, color: isActive ? '#fff' : 'rgba(255,255,255,0.6)',
+                    borderRadius: '8px', transition: 'all 0.2s', textDecoration: 'none',
+                    background: isActive ? 'rgba(255,255,255,0.08)' : 'transparent'
+                  }}
+                >
+                  {tab.name}
+                </a>
+              );
+            })}
+          </nav>
 
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <form onSubmit={handleSearch} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-               <NavIcon name="search" size={14} color="#a0aabf" style={{ position: 'absolute', left: '8px' }} />
-               <input 
-                 type="text" 
-                 placeholder="Cari Tiket..." 
-                 value={searchQuery}
-                 onChange={(e) => setSearchQuery(e.target.value)}
-                 style={{ padding: '4px 8px 4px 28px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '2px', color: 'white', fontSize: '11px', width: '150px' }} 
-               />
-            </form>
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '20px' }}>
+            {portalBase === 'it' && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <form onSubmit={handleSearch} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                   <NavIcon name="search" size={14} color="rgba(255,255,255,0.4)" style={{ position: 'absolute', left: '12px' }} />
+                   <input 
+                     type="text" 
+                     placeholder="Search assets, tickets..." 
+                     value={searchQuery}
+                     onChange={(e) => setSearchQuery(e.target.value)}
+                     style={{ 
+                       padding: '8px 12px 8px 36px', background: 'rgba(255,255,255,0.05)', 
+                       border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', 
+                       color: 'white', fontSize: '12px', width: '220px', transition: 'all 0.2s',
+                       outline: 'none'
+                     }} 
+                     onFocus={(e) => { e.currentTarget.style.width = '300px'; e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+                     onBlur={(e) => { e.currentTarget.style.width = '220px'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                   />
+                </form>
 
-            <button 
-              className="new-ticket-btn"
-              onClick={() => setShowRaiseModal(true)}
-              style={{ background: '#10b981', color: 'white', border: 'none', padding: '4px 12px', fontSize: '11px', fontWeight: 'bold', borderRadius: '2px', cursor: 'pointer' }}
-            >
-              + NEW TICKET
-            </button>
+                <button 
+                  className="btn-primary"
+                  onClick={() => setShowRaiseModal(true)}
+                  style={{ 
+                    background: 'var(--grad-primary)', color: 'white', border: 'none', 
+                    padding: '8px 16px', fontSize: '12px', fontWeight: 800, 
+                    borderRadius: '10px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)' 
+                  }}
+                >
+                  <NavIcon name="plus" size={12} color="#fff" />
+                  CREATE
+                </button>
+              </div>
+            )}
 
-            <div style={{ position: 'relative' }}>
-              <div onClick={() => setShowNotificationPanel(!showNotificationPanel)} style={{ cursor: 'pointer', position: 'relative' }}>
-                <NavIcon name="bell" size={18} color="#a0aabf" />
-                {recentActivities.length > 0 && (
-                  <span style={{ position: 'absolute', top: '-6px', right: '-8px', background: 'red', color: 'white', fontSize: '9px', padding: '1px 4px', borderRadius: '8px' }}>
-                    {recentActivities.length}
-                  </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ position: 'relative' }}>
+                <button 
+                  onClick={() => setShowNotificationPanel(!showNotificationPanel)} 
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '10px', transition: 'all 0.2s' }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                >
+                  <NavIcon name="bell" size={18} color="rgba(255,255,255,0.6)" />
+                  {recentActivities.length > 0 && (
+                    <span style={{ position: 'absolute', top: '8px', right: '8px', width: '6px', height: '6px', background: '#ef4444', borderRadius: '50%', border: '2px solid #0f172a' }} />
+                  )}
+                </button>
+                
+                {showNotificationPanel && (
+                  <div className="premium-glass-card shadow-2xl" style={{ 
+                    position: 'absolute', top: '48px', right: 0, width: '320px', 
+                    background: '#fff', color: '#1e293b', padding: '0', overflow: 'hidden',
+                    borderRadius: '16px', border: '1px solid rgba(0,0,0,0.05)'
+                  }}>
+                    <div style={{ padding: '16px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: 800, fontSize: '14px' }}>Notifications</span>
+                      <span style={{ fontSize: '11px', color: 'var(--primary)', fontWeight: 700, cursor: 'pointer' }}>Mark all as read</span>
+                    </div>
+                    <div style={{ maxHeight: '360px', overflowY: 'auto' }}>
+                      {recentActivities.length === 0 ? (
+                        <div style={{ padding: '40px 20px', textAlign: 'center', color: '#94a3b8' }}>
+                          <NavIcon name="bell" size={32} color="#e2e8f0" style={{ marginBottom: '12px' }} />
+                          <p style={{ fontSize: '13px', fontWeight: 600, margin: 0 }}>All caught up!</p>
+                          <p style={{ fontSize: '11px', margin: 0 }}>No new notifications for now.</p>
+                        </div>
+                      ) : (
+                        recentActivities.map(act => (
+                          <div 
+                            key={act.id} 
+                            style={{ 
+                              padding: '12px 16px', borderBottom: '1px solid #f8fafc', display: 'flex', 
+                              gap: '12px', cursor: 'pointer', transition: 'background 0.2s'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafc'}
+                            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                            onClick={() => {
+                              setShowNotificationPanel(false);
+                              router.push(`/${portalBase}/requests/${act.id}`);
+                            }}
+                          >
+                            <div style={{ width: '32px', height: '32px', background: 'var(--primary-glow)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                              <NavIcon name="requests" size={14} color="var(--primary)" />
+                            </div>
+                            <div style={{ minWidth: 0 }}>
+                              <p style={{ fontSize: '13px', fontWeight: 700, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{act.subject}</p>
+                              <p style={{ fontSize: '11px', color: '#64748b', margin: 0 }}>Ticket #{act.id?.toString().slice(-6)} • {act.requester?.name}</p>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    <div style={{ padding: '12px', textAlign: 'center', background: '#f8fafc', borderTop: '1px solid #f1f5f9' }}>
+                      <a href="#" style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', textDecoration: 'none' }}>View All Activity</a>
+                    </div>
+                  </div>
                 )}
               </div>
-              
-              {showNotificationPanel && (
-                <div className="legacy-notification-popup">
-                  <div style={{ padding: '8px 12px', borderBottom: '1px solid #eee', fontWeight: 'bold', fontSize: '12px' }}>Notifikasi</div>
-                  <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                    {recentActivities.length === 0 ? (
-                      <div style={{ padding: '20px', textAlign: 'center', color: '#888', fontSize: '11px' }}>Belum ada aktivitas baru.</div>
-                    ) : (
-                      recentActivities.map(act => (
-                        <div 
-                          key={act.id} 
-                          className="notif-item" 
-                          style={{ cursor: 'pointer' }}
-                          onClick={() => {
-                            setShowNotificationPanel(false);
-                            router.push(`/${portalBase}/requests/${act.id}`);
-                          }}
-                        >
-                          <span style={{ fontSize: '14px' }}>📩</span>
-                          <div>
-                            <p style={{ fontSize: '11px', margin: 0, fontWeight: 600 }}>#{act.id?.toString().slice(-6)} - {act.subject}</p>
-                            <p style={{ fontSize: '9px', color: '#888', margin: 0 }}>oleh {act.requester?.name} • {act.created_at ? new Date(act.created_at).toLocaleTimeString() : 'Baru'}</p>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
 
-            <NavIcon name="admin" size={18} color="#a0aabf" style={{ cursor: 'pointer' }} onClick={() => setShowSettingsPanel(true)} />
-            
-            <div 
-              style={{ width: '28px', height: '28px', background: '#555', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', border: '1px solid #777' }} 
-              onClick={() => setShowSettingsPanel(true)}
-            >
-              <NavIcon name="user" size={14} color="#fff" />
+              <button 
+                onClick={() => setShowSettingsPanel(true)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '10px', transition: 'all 0.2s' }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+              >
+                <NavIcon name="admin" size={18} color="rgba(255,255,255,0.6)" />
+              </button>
+              
+              <div 
+                style={{ width: '32px', height: '32px', background: 'var(--grad-teal)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '12px', fontWeight: 800, color: '#fff' }} 
+                onClick={() => setShowSettingsPanel(true)}
+              >
+                {currentUser?.name?.[0] || 'A'}
+              </div>
             </div>
           </div>
         </div>
@@ -217,6 +300,7 @@ export function GlobalHeader() {
             users={users}
             impacts={impacts}
             urgencies={urgencies}
+            groups={groups}
           />
         )}
 
@@ -224,7 +308,6 @@ export function GlobalHeader() {
           .legacy-header-container {
             width: 100%;
             font-family: Arial, sans-serif;
-            background: #232f3e;
             color: white;
             z-index: 1000;
           }
@@ -320,7 +403,7 @@ export function GlobalHeader() {
               cursor: 'pointer', background: 'var(--primary)', fontWeight: 600 
             }}
           >
-            AD
+            {currentUser?.name ? currentUser.name.split(' ').map((n:any) => n[0]).join('').slice(0, 2).toUpperCase() : 'FH'}
           </div>
 
           {showProfile && (
@@ -329,8 +412,8 @@ export function GlobalHeader() {
               marginTop: '12px', zIndex: 1000, overflow: 'hidden'
             }}>
               <div style={{ padding: '16px', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-                <p style={{ fontWeight: 700, fontSize: '14px' }}>Administrator</p>
-                <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>admin@helpdesk.com</p>
+                <p style={{ fontWeight: 700, fontSize: '14px' }}>{currentUser?.name || 'Farhan Dwi Haryanto'}</p>
+                <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{currentUser?.email || 'farhan@itportal.com'}</p>
               </div>
               
               <div className="dropdown-item-zoho" onClick={toggleTheme}>

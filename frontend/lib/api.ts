@@ -6,7 +6,8 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'x-api-key': 'sd_secret_key_123', // Static key for now, matches internalKey in old auth
+    'X-Requested-With': 'XMLHttpRequest',
+    'x-api-key': 'sd_secret_key_123',
     ...(options.headers || {}),
   };
 

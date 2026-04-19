@@ -2,32 +2,53 @@
 
 import React from 'react';
 
-export function LegacyProblemSidebar() {
-  const filters = [
-    { name: 'All Problems', count: 24 },
-    { name: 'Open Problems', count: 12, active: true },
-    { name: 'My Problems', count: 5 },
-    { name: 'Unassigned Problems', count: 8 },
-    { name: 'Known Errors', count: 4 },
+interface LegacyProblemSidebarProps {
+  currentFilter: string;
+  onFilterChange: (filter: string) => void;
+  counts: {
+    all: number;
+    open: number;
+    my: number;
+    unassigned: number;
+    knownErrors: number;
+  };
+}
+
+export function LegacyProblemSidebar({ currentFilter, onFilterChange, counts }: LegacyProblemSidebarProps) {
+  const folders = [
+    { id: 'all', name: 'All Problems', count: counts.all },
+    { id: 'open', name: 'Open Problems', count: counts.open },
+    { id: 'my', name: 'My Problems', count: counts.my },
+    { id: 'unassigned', name: 'Unassigned Problems', count: counts.unassigned },
+    { id: 'knownErrors', name: 'Known Errors', count: counts.knownErrors },
   ];
 
   return (
-    <aside className="legacy-sidebar-tree" style={{ padding: '0' }}>
-      <div className="legacy-panel" style={{ border: 'none', background: 'transparent' }}>
-        <div className="legacy-panel-header">
-          <span>Problem Views</span>
-        </div>
-        <div style={{ padding: '8px' }}>
-          {filters.map((f, i) => (
-             <div key={i} className={`topic-tree-node ${f.active ? 'active' : ''}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span>{f.active ? '📂' : '📁'} {f.name}</span>
-                <span style={{ fontSize: '10px', opacity: 0.6 }}>({f.count})</span>
-             </div>
-          ))}
-          
-          <div style={{ borderTop: '1px solid #eee', marginTop: '16px', paddingTop: '12px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '8px', padding: '4px 12px' }}>Incident Mapping</div>
-            <div className="topic-tree-node"><span>🔗</span> Problem to Incidents</div>
+    <aside className="legacy-sidebar-tree" style={{ width: '260px', borderRight: '1px solid #e2e8f0', background: '#fff' }}>
+      <div className="zoho-sidebar-section-title">Problem Views</div>
+      
+      <div className="zoho-folder-tree">
+        {folders.map((f) => (
+          <div 
+            key={f.id} 
+            className={`zoho-folder-node ${currentFilter === f.id ? 'active' : ''}`}
+            onClick={() => onFilterChange(f.id)}
+          >
+            <div className="zoho-folder-name">
+              <span style={{ fontSize: '16px' }}>{currentFilter === f.id ? '📂' : '📁'}</span>
+              <span>{f.name}</span>
+            </div>
+            <span className="zoho-folder-count">({f.count})</span>
+          </div>
+        ))}
+
+        <div className="zoho-sidebar-divider"></div>
+        
+        <div className="zoho-sidebar-section-title">Incident Mapping</div>
+        <div className="zoho-folder-node">
+          <div className="zoho-folder-name">
+            <span style={{ fontSize: '14px' }}>🔗</span>
+            <span>Problem to Incidents</span>
           </div>
         </div>
       </div>

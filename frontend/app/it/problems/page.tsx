@@ -1,6 +1,5 @@
 import { apiFetch, endpoints } from '@/lib/api';
-import { ProblemClientView } from '../../components/ProblemClientView';
-import { LegacyProblemSidebar } from '../../components/LegacyProblemSidebar';
+import { ProblemModuleView } from '../../components/ProblemModuleView';
 
 async function getProblemData() {
   try {
@@ -25,16 +24,11 @@ export default async function ProblemsPage() {
   const { problems, categories, priorities, statuses } = await getProblemData();
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#fff' }}>
-      <LegacyProblemSidebar />
-      <main style={{ flex: 1, padding: '16px', overflowY: 'auto' }}>
-        <ProblemClientView 
-          problems={problems}
-          categories={categories}
-          priorities={priorities}
-          statuses={statuses}
-        />
-      </main>
-    </div>
+    <ProblemModuleView 
+      problems={problems}
+      categories={categories}
+      priorities={priorities}
+      statuses={statuses}
+    />
   );
 }

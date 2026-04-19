@@ -1,23 +1,27 @@
 import { apiFetch, endpoints } from '@/lib/api';
 import { SubHeader } from '../../components/SubHeader';
 import { RequestClientView } from '../../components/RequestClientView';
+import { FilterSidebar } from '../../components/FilterSidebar';
 
-async function getRequestData() {
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+async function getRequestData(status: string) {
   try {
     const [ticketsData, lookups] = await Promise.all([
-      apiFetch(endpoints.tickets),
-      apiFetch(endpoints.lookups),
+      apiFetch(`${endpoints.tickets}?status=${status}`, { cache: 'no-store' }),
+      apiFetch(endpoints.lookups, { cache: 'no-store' }),
     ]);
     
     const counts = ticketsData.counts || {};
     
     const statusFilters = [
-      { name: 'All Tickets', count: counts.all || 0 },
-      { name: 'Open Tickets', count: counts.open || 0, active: true },
-      { name: 'On Hold Tickets', count: counts.on_hold || 0 },
-      { name: 'Resolved Tickets', count: counts.resolved || 0 },
-      { name: 'Closed Tickets', count: counts.closed || 0 },
-      { name: 'Overdue Tickets', count: counts.overdue || 0 },
+      { name: 'All Tickets', count: counts.all || 0, type: 'ALL' },
+      { name: 'Open Tickets', count: counts.open || 0, type: 'OPEN' },
+      { name: 'On Hold Tickets', count: counts.on_hold || 0, type: 'ON_HOLD' },
+      { name: 'Resolved Tickets', count: counts.resolved || 0, type: 'RESOLVED' },
+      { name: 'Closed Tickets', count: counts.closed || 0, type: 'CLOSED' },
+      { name: 'Overdue Tickets', count: counts.overdue || 0, type: 'OVERDUE' },
     ];
     
     return { 
@@ -27,7 +31,9 @@ async function getRequestData() {
       priorities: lookups.priorities, 
       users: lookups.users, 
       impacts: lookups.impacts, 
-      urgencies: lookups.urgencies 
+      urgencies: lookups.urgencies,
+      sites: lookups.sites,
+      groups: lookups.groups
     };
   } catch (error) {
     console.error("Requests fetch failed:", error);
@@ -38,48 +44,23 @@ async function getRequestData() {
       priorities: [], 
       users: [], 
       impacts: [], 
-      urgencies: [] 
+      urgencies: [],
+      sites: [],
+      groups: []
     };
   }
 }
 
-export default async function RequestsPage() {
-  const { requests, statusFilters, categories, priorities, users, impacts, urgencies } = await getRequestData();
+export default async function RequestsPage({ searchParams }: { searchParams: { status?: string } }) {
+  const status = searchParams.status || 'OPEN';
+  const { requests, statusFilters, categories, priorities, users, impacts, urgencies, sites, groups } = await getRequestData(status);
 
   return (
     <div className="enterprise-page-layout zoho-theme-bg" style={{ display: 'flex', flexDirection: 'column' }}>
       <SubHeader />
       
       <div className="requests-content-split" style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        <aside style={{ width: '280px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div className="card glass-card" style={{ padding: '24px' }}>
-            <h4 style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1.5px' }}>
-              Status Filters
-            </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              {statusFilters.map((filter) => (
-                <div 
-                  key={filter.name} 
-                  className={`premium-filter-item ${filter.active ? 'active' : ''}`}
-                >
-                  <span>{filter.name}</span>
-                  <span style={{ fontSize: '11px', opacity: filter.active ? 0.8 : 0.5 }}>{filter.count}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          <div className="card glass-card" style={{ padding: '24px' }}>
-            <h4 style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '1.5px' }}>
-              Regional Filter
-            </h4>
-            <select className="premium-input" style={{ width: '100%', padding: '10px' }}>
-              <option>All Sites</option>
-              <option>Main Office</option>
-              <option>Remote Branch</option>
-            </select>
-          </div>
-        </aside>
+        <FilterSidebar statusFilters={statusFilters} />
 
         <div className="enterprise-table-container" style={{ flex: 1, padding: '24px', overflowY: 'auto' }}>
           <RequestClientView 
@@ -89,6 +70,8 @@ export default async function RequestsPage() {
             users={users}
             impacts={impacts}
             urgencies={urgencies}
+            sites={sites}
+            groups={groups}
           />
         </div>
       </div>

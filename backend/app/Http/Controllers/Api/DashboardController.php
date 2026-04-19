@@ -17,24 +17,31 @@ class DashboardController extends Controller
     {
         $now = Carbon::now();
 
-        // Status Distribution for Requests
+        $technicians = \App\Models\User::where('name', 'Farhan Dwi Haryanto')
+            ->get(['id', 'name', 'email']);
+
+        // 2. Status Distribution for Requests
         $requestStatus = TicketRequest::join('statuses', 'requests.status_id', '=', 'statuses.id')
             ->select('statuses.name', 'statuses.type', DB::raw('count(*) as count'))
             ->groupBy('statuses.name', 'statuses.type')
             ->get();
 
-        // Specific counts for IT Portal
-        $openCount = TicketRequest::whereHas('status', function($q) { $q->where('type', 'OPEN'); })->count();
-        $inProgressCount = TicketRequest::whereHas('status', function($q) { $q->where('type', 'IN_PROGRESS'); })->count();
-        $overdueCount = TicketRequest::where('due_at', '<', $now)
-            ->whereHas('status', function($q) { $q->whereNotIn('type', ['RESOLVED', 'CLOSED']); })
-            ->count();
-
-        // Priority Distribution for Requests
-        $requestPriority = TicketRequest::join('priorities', 'requests.priority_id', '=', 'priorities.id')
-            ->select('priorities.name', DB::raw('count(*) as count'))
-            ->groupBy('priorities.name')
+        // 3. Performance Matrix - Consolidated to Farhan Dwi only
+        $performanceMatrix = TicketRequest::join('users as tech', 'requests.technician_id', '=', 'tech.id')
+            ->join('statuses', 'requests.status_id', '=', 'statuses.id')
+            ->select(
+                'tech.name as technician_name',
+                DB::raw('CAST(EXTRACT(MONTH FROM requests.created_at) AS INTEGER) as month'),
+                'statuses.type as status_type',
+                DB::raw('count(*) as total')
+            )
+            ->whereYear('requests.created_at', 2026)
+            ->where('tech.name', 'Farhan Dwi Haryanto') // Filter specifically for Farhan
+            ->groupBy('tech.name', 'month', 'status_type')
             ->get();
+
+        // 4. Report Folders (From DB Seed)
+        $reportFolders = \App\Models\ReportFolder::all(['id', 'name']);
 
         return response()->json([
             'stats' => [
@@ -42,17 +49,16 @@ class DashboardController extends Controller
                 'total_assets' => Asset::count(),
                 'total_problems' => Problem::count(),
                 'total_changes' => Change::count(),
-                'open_requests' => $openCount,
-                'in_progress_requests' => $inProgressCount,
-                'overdue_requests' => $overdueCount,
+                'open_requests' => TicketRequest::whereHas('status', function($q) { $q->where('type', 'OPEN'); })->count(),
+                'overdue_requests' => TicketRequest::where('due_at', '<', $now)
+                    ->whereHas('status', function($q) { $q->whereNotIn('type', ['RESOLVED', 'CLOSED']); })
+                    ->count(),
             ],
-            'distributions' => [
-                'requests_by_status' => $requestStatus,
-                'requests_by_priority' => $requestPriority,
-            ],
+            'technicians' => $technicians,
+            'performance_matrix' => $performanceMatrix,
+            'report_folders' => $reportFolders,
             'recent_activity' => [
-                'latest_requests' => TicketRequest::with(['requester', 'status', 'priority', 'category'])->latest()->take(8)->get(),
-                'latest_problems' => Problem::with(['status'])->latest()->take(5)->get(),
+                'latest_requests' => TicketRequest::with(['requester', 'status', 'priority'])->latest()->take(5)->get(),
             ]
         ]);
     }

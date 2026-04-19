@@ -13,7 +13,7 @@ export function AppWrapper({
   user: any;
 }) {
   const pathname = usePathname();
-  const isLoginPage = pathname === '/';
+  const isLoginPage = pathname === '/' || pathname === '/login';
   const isPortalPage = false; // We use legacy layout for everything else
 
   if (isLoginPage) {

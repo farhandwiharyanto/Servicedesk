@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\AssetController;
 use App\Http\Controllers\Api\LookupController;
 use App\Http\Controllers\Api\ChatBotController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\ReportController;
+use App\Http\Controllers\Api\InboundEmailController;
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
@@ -22,17 +24,23 @@ Route::get('/lookups', [LookupController::class, 'index']);
 // Tickets (Requests & Problems)
 Route::prefix('tickets')->group(function () {
     Route::post('/suggest', [TicketController::class, 'suggestCategory']);
+    Route::get('/metadata', [TicketController::class, 'getMetadata']);
     Route::get('/', [TicketController::class, 'index']);
     Route::get('/problem', [TicketController::class, 'indexProblem']);
     Route::get('/change', [TicketController::class, 'indexChange']);
     Route::get('/{id}', [TicketController::class, 'show']);
     Route::get('/{id}/suggestions', [TicketController::class, 'smartSolutions']);
     Route::get('/{id}/sentiment', [TicketController::class, 'predictSentiment']);
+    Route::get('/{id}/summarize', [TicketController::class, 'summarize']);
     Route::post('/request', [TicketController::class, 'storeRequest']);
     Route::post('/problem', [TicketController::class, 'storeProblem']);
     Route::post('/{id}/feedback', [TicketController::class, 'handleFeedback']);
     Route::post('/{id}/comments', [TicketController::class, 'addComment']);
     Route::patch('/{id}/assign', [TicketController::class, 'assignTechnician']);
+    Route::patch('/{id}/status', [TicketController::class, 'updateStatus']);
+    Route::patch('/{id}', [TicketController::class, 'updateRequest']);
+    Route::patch('/problem/{id}', [TicketController::class, 'updateProblem']);
+    Route::post('/problem/{id}/publish', [TicketController::class, 'publishKnownError']);
     Route::post('/check-sla', [TicketController::class, 'runSlaCheck']);
     Route::delete('/', [TicketController::class, 'destroy']);
 });
@@ -50,6 +58,19 @@ Route::post('/chatbot', [ChatBotController::class, 'chat']);
 
 // Dashboard
 Route::get('/dashboard', [DashboardController::class, 'index']);
+
+// Reports
+Route::get('/reports', [ReportController::class, 'index']);
+Route::post('/inbound-email', [InboundEmailController::class, 'handle']);
+Route::post('/tickets', [TicketController::class, 'store']);
+Route::get('/reports/folders', [ReportController::class, 'getFolders']);
+
+// Roles
+use App\Http\Controllers\Api\RoleController;
+Route::get('/roles', [RoleController::class, 'index']);
+Route::post('/roles', [RoleController::class, 'store']);
+Route::patch('/roles/{id}', [RoleController::class, 'update']);
+Route::delete('/roles/{id}', [RoleController::class, 'destroy']);
 
 // Secondary Modules
 use App\Http\Controllers\Api\ChangeController;

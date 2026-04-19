@@ -2,33 +2,59 @@
 
 import React from 'react';
 
-export function LegacyAssetSidebar() {
+interface LegacyAssetSidebarProps {
+  currentCategory: string;
+  onCategoryChange: (category: string) => void;
+  counts: {
+    it: number;
+    nonIt: number;
+    components: number;
+    software: number;
+    consumables: number;
+  };
+}
+
+export function LegacyAssetSidebar({ currentCategory, onCategoryChange, counts }: LegacyAssetSidebarProps) {
   const categories = [
-    { name: 'IT Assets', count: 156, active: true },
-    { name: 'Non-IT Assets', count: 42 },
-    { name: 'Asset Components', count: 88 },
-    { name: 'Software', count: 210 },
-    { name: 'Consumables', count: 15 },
+    { id: 'it', name: 'IT Assets', count: counts.it },
+    { id: 'nonIt', name: 'Non-IT Assets', count: counts.nonIt },
+    { id: 'components', name: 'Asset Components', count: counts.components },
+    { id: 'software', name: 'Software', count: counts.software },
+    { id: 'consumables', name: 'Consumables', count: counts.consumables },
   ];
 
   return (
-    <aside className="legacy-sidebar-tree" style={{ padding: '0' }}>
-      <div className="legacy-panel" style={{ border: 'none', background: 'transparent' }}>
-        <div className="legacy-panel-header">
-          <span>Asset Categories</span>
+    <aside className="legacy-sidebar-tree" style={{ width: '260px', borderRight: '1px solid #e2e8f0', background: '#fff' }}>
+      <div className="zoho-sidebar-section-title">Asset Categories</div>
+      
+      <div className="zoho-folder-tree">
+        {categories.map((c) => (
+          <div 
+            key={c.id} 
+            className={`zoho-folder-node ${currentCategory === c.id ? 'active' : ''}`}
+            onClick={() => onCategoryChange(c.id)}
+          >
+            <div className="zoho-folder-name">
+              <span style={{ fontSize: '16px' }}>{currentCategory === c.id ? '📂' : '📁'}</span>
+              <span>{c.name}</span>
+            </div>
+            <span className="zoho-folder-count">({c.count})</span>
+          </div>
+        ))}
+
+        <div className="zoho-sidebar-divider"></div>
+        
+        <div className="zoho-sidebar-section-title">Scan Operations</div>
+        <div className="zoho-folder-node">
+          <div className="zoho-folder-name">
+            <span style={{ fontSize: '14px' }}>📡</span>
+            <span>Windows Scan</span>
+          </div>
         </div>
-        <div style={{ padding: '8px' }}>
-          {categories.map((c, i) => (
-             <div key={i} className={`topic-tree-node ${c.active ? 'active' : ''}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span>{c.active ? '📁' : '📂'} {c.name}</span>
-                <span style={{ fontSize: '10px', opacity: 0.6 }}>({c.count})</span>
-             </div>
-          ))}
-          
-          <div style={{ borderTop: '1px solid #eee', marginTop: '16px', paddingTop: '12px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '8px', padding: '4px 12px' }}>Scan Operations</div>
-            <div className="topic-tree-node"><span>📡</span> Windows Scan</div>
-            <div className="topic-tree-node"><span>🍎</span> Mac Scan</div>
+        <div className="zoho-folder-node">
+          <div className="zoho-folder-name">
+            <span style={{ fontSize: '14px' }}>🍎</span>
+            <span>Mac Scan</span>
           </div>
         </div>
       </div>

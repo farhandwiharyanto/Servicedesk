@@ -159,5 +159,28 @@ All colors are aligned with the Zoho/ManageEngine branding palette:
   - **Diagnostik Transparan**: Penambahan fitur "Diagnostic Steps" di UI, menampilkan proses bernalar AI (misalnya "Menganalisis daftar aset...") dalam stream komentar tanpa mengganggu pengalaman pengguna.
   - **Efisiensi Loop**: Konfigurasi batasan iterasi logika agen (maksimal 3 *loops*) untuk mencegah *timeout* sekaligus mempertahankan kualitas respon analitis berbasis data *real-time*.
 
+### [PHASE 25] Integration Sync & Interactive Navigation (Zoho-Style)
+- **Fase 25**: Pengintegrasian fungsionalitas interaktif penuh pada seluruh navigasi portal:
+  - **Full Folder Sync**: Implementasi logika pemfilteran *real-time* pada sidebar di modul Home, Reports, Problems, Solutions, dan Assets. Navigasi folder tidak lagi hanya visual, melainkan fungsional (dapat diklik untuk menyaring data).
+  - **Zoho Enterprise Reports UI**: Perombakan total tampilan modul Reports agar identik dengan standar visual Zoho (sidebar ramping, ikon ekspansi ▼/▶, dan penataan daftar laporan yang profesional menggunakan ikon 🖋️).
+  - **Module Data Reconciliation**: Penyempurnaan logika filter (*predicates*) untuk memastikan angka di sidebar (counts) sinkron 100% dengan baris data di tabel (misalnya pengelompokan IT Assets vs Non-IT).
+  - **Stability & Bug Fixes**: Pembersihan error kritis seperti *ReferenceError* (loading state) dan *JSX Build Errors* untuk menjamin stabilitas portal sebelum rilis produksi.
+
+### [PHASE 26] Dynamic Customization & Email Automation
+- **Fase 26**: Peningkatan fleksibilitas input dan integrasi saluran email:
+  - **Dynamic Subcategory Logic**: Implementasi filter dinamis pada form pembuatan tiket yang menyesuaikan daftar sub-kategori berdasarkan kategori induk yang dipilih (Application vs Infrastructure).
+  - **Email-to-Ticket Automation**: Pengembangan endpoint `/api/inbound-email` yang mampu mengubah payload webhook email menjadi tiket ServiceDesk secara otomatis dengan mapping properti enterprise (Site, Group, Technician).
+  - **Auto-User Provisioning (Email)**: Sistem secara otomatis membuat akun user baru jika pengirim email belum terdaftar dalam database.
+  - **SLA Calculation (Inbound)**: Penentuan otomatis tanggal *Response DueBy* (+1 hari) dan *DueBy Date* (+7 hari) untuk setiap tiket yang masuk via jalur email.
+
+### [PHASE 27] 3-Tier Categorization & Resolution Workflow
+- **Fase 27**: Implementasi sistem kategorisasi 3-level dan alur resolusi tiket yang lebih presisi:
+  - **3-Tier Hierarchy (Category > Subcategory > Item)**: Ekspansi sistem kategorisasi mencakup level "Item" yang sangat granular untuk kategori Application dan Infrastructure.
+  - **Resolution-Phase Categorization**: Memisahkan pemilihan "Item" dari form awal ke fase **Ticket Resolution** untuk akurasi data remediasi.
+  - **Interactive Resolution Tab**: Penambahan tab "Resolution" pada halaman detail tiket untuk proses pemilihan Item dan penutupan tiket.
+  - **UI Consistency (Edit Properties)**: Pembaruan field "Subcategory" dan "Item" pada panel *Properties* menjadi dropdown dinamis, memastikan teknisi memilih data yang valid saat mengedit tiket lama.
+  - **Request Table Sync**: Penambahan kolom "Item" pada tabel utama daftar tiket (`RequestClientView`) agar hasil kategorisasi 3-level dapat langsung dipantau secara visual.
+  - **Database Migration/Sync**: Sinkronisasi data pada tiket-tiket yang sudah ada (existing) agar sesuai dengan skema sub-kategori baru untuk tujuan pengujian.
+
 ---
-**Status Terakhir**: Seluruh portal ESM (IT, HR, Facilities, Housekeeping) telah tersinkronisasi sepenuhnya, dan mesin AI telah di-*upgrade* menjadi agen diagnostik mandiri (Phase 24) yang mampu menarik data dinamis untuk membantu resolusi masalah harian.
+**Status Terakhir**: Seluruh fitur utama ESM, integrasi AI, dan alur resolusi 3-tier telah stabil (Phase 27). Sistem kini mendukung pelacakan masalah hingga level Item yang sangat spesifik melalui dropdown terintegrasi di seluruh portal.

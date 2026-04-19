@@ -17,10 +17,15 @@ export async function login(usernameOrEmail: string, password?: string) {
     
     if (response.ok) {
       const user = await response.json();
-      // Sync the old cookie system with the new one for compatibility
-      cookieStore.set('portal_user_logged_in', user.role.name.toLowerCase(), { 
+      // Store full identity in cookie for immediate UI response
+      // Set httpOnly: false so client-side header can read identity immediately
+      cookieStore.set('portal_user_logged_in', JSON.stringify({
+        name: user.name,
+        email: user.email,
+        role: user.role.name
+      }), { 
         path: '/',
-        httpOnly: true,
+        httpOnly: false,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         maxAge: 60 * 60 * 24 
@@ -30,10 +35,14 @@ export async function login(usernameOrEmail: string, password?: string) {
       throw new Error(errorData.message || 'The provided credentials do not match our records.');
     }
   } else {
-    // Legacy support for Quick Selection cards
-    cookieStore.set('portal_user_logged_in', usernameOrEmail, { 
+    // Legacy support for Quick Selection cards - convert to object
+    cookieStore.set('portal_user_logged_in', JSON.stringify({
+      name: usernameOrEmail === 'admin' ? 'Farhan Dwi Haryanto' : usernameOrEmail,
+      email: usernameOrEmail === 'admin' ? 'farhan@itportal.com' : `${usernameOrEmail}@itportal.com`,
+      role: usernameOrEmail === 'admin' ? 'Administrator' : 'User'
+    }), { 
       path: '/',
-      httpOnly: true,
+      httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 

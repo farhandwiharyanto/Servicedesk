@@ -43,11 +43,11 @@ function LoginForm() {
     else if (path.includes('/super_admin')) setPortal(portalConfigs.super);
     
     // Autofill username for convenience as requested
-    if (path.includes('/it')) setUsername('it_portal');
+    if (path.includes('/it')) setUsername('farhan@itportal.com');
     else if (path.includes('/hr')) setUsername('hr_portal');
     else if (path.includes('/facilities')) setUsername('fm_portal');
     else if (path.includes('/housekeeping')) setUsername('hp_portal');
-    else setUsername('super_admin');
+    else setUsername('admin@servicedesk.com');
   }, [callbackUrl]);
 
   const handleSubmit = async (e: React.FormEvent) => {

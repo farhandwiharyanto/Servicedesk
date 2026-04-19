@@ -1,6 +1,5 @@
 import { apiFetch, endpoints } from '@/lib/api';
-import { AssetClientView } from '../../components/AssetClientView';
-import { LegacyAssetSidebar } from '../../components/LegacyAssetSidebar';
+import { AssetModuleView } from '../../components/AssetModuleView';
 
 async function getAssetData() {
   try {
@@ -25,16 +24,11 @@ export default async function AssetsPage() {
   const { assets, assetTypes, assetStates, users } = await getAssetData();
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#fff' }}>
-      <LegacyAssetSidebar />
-      <main style={{ flex: 1, padding: '16px', overflowY: 'auto' }}>
-        <AssetClientView 
-          assets={assets}
-          assetTypes={assetTypes}
-          assetStates={assetStates}
-          users={users}
-        />
-      </main>
-    </div>
+    <AssetModuleView 
+      assets={assets}
+      assetTypes={assetTypes}
+      assetStates={assetStates}
+      users={users}
+    />
   );
 }

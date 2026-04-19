@@ -7,10 +7,23 @@ export async function createRequest(formData: FormData) {
   const data = {
     subject: formData.get('subject') as string,
     description: formData.get('description') as string,
-    requester_id: formData.get('requesterId') as string,
-    category_id: formData.get('categoryId') as string,
-    priority_id: formData.get('priorityId') as string,
-    status_id: formData.get('statusId') as string,
+    requester_id: formData.get('requester_id') as string,
+    category_id: formData.get('category_id') as string,
+    priority_id: formData.get('priority_id') as string,
+    status_id: formData.get('status_id') as string || null,
+    
+    // Enterprise Fields
+    request_type: formData.get('request_type') as string,
+    mode: formData.get('mode') as string,
+    subcategory: formData.get('subcategory') as string,
+    item: formData.get('item') as string,
+    impact_id: formData.get('impact_id') as string || null,
+    urgency_id: formData.get('urgency_id') as string || null,
+    group_id: formData.get('group_id') as string || null,
+    site_id: formData.get('site_id') as string || null,
+    technician_id: formData.get('technician_id') as string || null,
+    initial_handler_name: formData.get('initial_handler_name') as string,
+    due_at: formData.get('due_at') as string || null,
   };
 
   await apiFetch(endpoints.requests, {

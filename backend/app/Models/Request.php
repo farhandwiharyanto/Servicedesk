@@ -60,6 +60,26 @@ class Request extends Model
         return $this->belongsTo(Group::class);
     }
 
+    public function l2_group()
+    {
+        return $this->belongsTo(Group::class, 'l2_group_id');
+    }
+
+    public function incident_manager()
+    {
+        return $this->belongsTo(User::class, 'incident_manager_id');
+    }
+
+    public function created_by()
+    {
+        return $this->belongsTo(User::class, 'created_by_id');
+    }
+
+    public function initial_handler()
+    {
+        return $this->belongsTo(User::class, 'initial_handler_id');
+    }
+
     public function change()
     {
         return $this->belongsTo(Change::class);
